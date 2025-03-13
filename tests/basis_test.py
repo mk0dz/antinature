@@ -8,12 +8,7 @@ import os
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from antimatter_qchem.core.basis import * 
-
-import numpy as np
-import matplotlib.pyplot as plt
-from antimatter_qchem.core import GaussianBasisFunction, BasisSet, PositronBasis, MixedMatterBasis
-
+from antimatter_qchem.core import *
 def test_gaussian_basis_function():
     """Test the GaussianBasisFunction class."""
     print("Testing GaussianBasisFunction...")

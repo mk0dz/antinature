@@ -30,7 +30,6 @@ from .validation.test_suite import TestSuite
 
 # framework
 
-from .qchem_test import * 
 
 __version__ = "0.1.0"
 
