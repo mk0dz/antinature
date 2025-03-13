@@ -80,8 +80,12 @@ def test_hamiltonian_to_qiskit_operator():
         # Print a few terms for inspection
         print(f"\nSample of Pauli terms:")
         count = 0
-        for pauli_op, coeff in list(op)[:5]:  # Print first 5 terms
-            print(f"  {coeff.real:.6f} * {pauli_op}")
+        
+        # Fix for updated Qiskit API - use to_list() method instead of direct iteration
+        # This returns a list of (Pauli_label, coefficient) tuples
+        pauli_terms = op.to_list()
+        for i, (label, coeff) in enumerate(pauli_terms[:5]):  # Print first 5 terms
+            print(f"  {coeff.real:.6f} * {label}")
             count += 1
         
         if len(op) > 5:

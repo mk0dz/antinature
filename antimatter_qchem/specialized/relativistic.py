@@ -2,6 +2,8 @@ import numpy as np
 from typing import List, Tuple, Dict, Optional
 from scipy.linalg import eigh
 
+from antimatter_qchem.core import *
+
 class RelativisticCorrection:
     """Relativistic corrections for antimatter systems."""
     
@@ -37,6 +39,13 @@ class RelativisticCorrection:
             self.particle_basis = basis.positron_basis
         else:
             self.particle_basis = basis.electron_basis
+            
+        # Calculate relativistic integrals during initialization if the integral engine is available
+        if hasattr(basis, 'integral_engine'):
+            rel_matrices = self.calculate_relativistic_integrals(basis.integral_engine)
+            # Store calculated matrices in the hamiltonian
+            for key, matrix in rel_matrices.items():
+                self.hamiltonian[key] = matrix
     
     def calculate_relativistic_integrals(self, integral_engine):
         """
@@ -91,11 +100,17 @@ class RelativisticCorrection:
         # For spin-orbit coupling, we would need angular momentum integrals
         # This is a simplified implementation
         
-        return {
+        rel_matrices = {
             'mass_velocity': mass_velocity,
             'darwin': darwin,
             'spin_orbit': spin_orbit
         }
+        
+        # Store calculated matrices in the hamiltonian
+        for key, matrix in rel_matrices.items():
+            self.hamiltonian[key] = matrix
+            
+        return rel_matrices
     
     def scalar_relativistic_correction(self, wavefunction: Dict):
         """
@@ -125,7 +140,13 @@ class RelativisticCorrection:
         darwin = self.hamiltonian.get('darwin')
         
         if mass_velocity is None or darwin is None:
-            return {'mass_velocity': 0.0, 'darwin': 0.0, 'total': 0.0}
+            # If matrices aren't in hamiltonian already, try to calculate them
+            if hasattr(self.basis, 'integral_engine'):
+                rel_matrices = self.calculate_relativistic_integrals(self.basis.integral_engine)
+                mass_velocity = rel_matrices['mass_velocity']
+                darwin = rel_matrices['darwin']
+            else:
+                return {'mass_velocity': 0.0, 'darwin': 0.0, 'total': 0.0}
         
         # Calculate expectation values
         e_mv = np.sum(density * mass_velocity)
@@ -222,6 +243,13 @@ class RelativisticCorrection:
         Dict
             Corrected Hamiltonian
         """
+        # First make sure relativistic matrices are calculated and stored in hamiltonian
+        if 'mass_velocity' not in hamiltonian or 'darwin' not in hamiltonian:
+            if hasattr(self.basis, 'integral_engine'):
+                rel_matrices = self.calculate_relativistic_integrals(self.basis.integral_engine)
+                for key, matrix in rel_matrices.items():
+                    hamiltonian[key] = matrix
+        
         if method == 'perturbative':
             # Add mass-velocity and Darwin terms to core Hamiltonian
             if self.is_positronic:
