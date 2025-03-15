@@ -16,3 +16,10 @@ from .core.basis import (
 )
 from .core.molecular_data import MolecularData
 # Add other imports as modules are created
+
+
+from .specialized.relativistic import RelativisticCorrection
+from .specialized.annihilation import AnnihilationOperator
+
+
+

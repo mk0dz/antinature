@@ -22,7 +22,8 @@ class MolecularData:
                  multiplicity: int = 1,
                  units: str = 'bohr',
                  name: str = '',
-                 description: str = ''):
+                 description: str = '',
+                 is_positronium: bool = False):
         """
         Initialize molecular data for an antimatter system.
         
@@ -44,9 +45,12 @@ class MolecularData:
             Name or identifier for the molecule
         description : str
             Optional description of the molecular system
+        is_positronium : bool
+            Whether this system is a positronium bound state
         """
         self.name = name
         self.description = description
+        self.is_positronium = is_positronium
         
         # Store atomic data
         self.atoms = []
@@ -519,11 +523,15 @@ class MolecularData:
         ax.set_title(title)
         
         # Set equal aspect ratio
-        max_range = np.array([
+        max_range = max([
             self.geometry[:, 0].max() - self.geometry[:, 0].min(),
             self.geometry[:, 1].max() - self.geometry[:, 1].min(),
             self.geometry[:, 2].max() - self.geometry[:, 2].min()
-        ]).max() / 2.0
+        ]) / 2.0
+        
+        # Add small value to avoid identical limits error
+        if max_range < 1e-10:
+            max_range = 0.5  # Default to 0.5 if molecule is a single atom
         
         mid_x = (self.geometry[:, 0].max() + self.geometry[:, 0].min()) * 0.5
         mid_y = (self.geometry[:, 1].max() + self.geometry[:, 1].min()) * 0.5
@@ -541,7 +549,14 @@ class MolecularData:
         if save_path:
             plt.savefig(save_path, dpi=300, bbox_inches='tight')
         
-        plt.show()
+        # Try to show the plot, but handle non-interactive environments gracefully
+        try:
+            plt.show()
+        except Exception as e:
+            print(f"Warning: Could not display the plot interactively ({str(e)})")
+            print("Plot is saved if a save_path was provided.")
+        
+        return fig
     
     def to_xyz_string(self, comment: str = None) -> str:
         """
@@ -664,7 +679,8 @@ class MolecularData:
             n_positrons=1,
             charge=0,
             name="Positronium",
-            description="Positronium (e- + e+) bound state"
+            description="Positronium (e- + e+) bound state",
+            is_positronium=True
         )
     
     @classmethod

@@ -1,0 +1,18 @@
+Metadata-Version: 2.2
+Name: antimatter-beta
+Version: 0.1.0
+Summary: Quantum chemistry package for antimatter simulations
+Author: mk0dz
+Requires-Python: >=3.8
+Requires-Dist: numpy
+Requires-Dist: scipy
+Requires-Dist: matplotlib
+Provides-Extra: qiskit
+Requires-Dist: qiskit>=1.0.0; extra == "qiskit"
+Requires-Dist: qiskit-algorithms>=0.3.0; extra == "qiskit"
+Requires-Dist: qiskit-nature>=0.7.0; extra == "qiskit"
+Dynamic: author
+Dynamic: provides-extra
+Dynamic: requires-dist
+Dynamic: requires-python
+Dynamic: summary
