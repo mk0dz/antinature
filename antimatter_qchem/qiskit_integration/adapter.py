@@ -1,84 +1,34 @@
 import numpy as np
 from typing import List, Tuple, Dict, Optional, Union
-import scipy.sparse as sparse
+import time
 
-# Import Qiskit modules
+# Import Qiskit components conditionally
 try:
     from qiskit_nature.second_q.hamiltonians import ElectronicEnergy
     from qiskit_nature.second_q.problems import ElectronicStructureProblem
     from qiskit_nature.second_q.mappers import JordanWignerMapper, ParityMapper
     from qiskit_nature.second_q.algorithms import GroundStateEigensolver
     from qiskit_algorithms import VQE, NumPyMinimumEigensolver
-    from qiskit_algorithms.optimizers import SPSA, COBYLA
-    from qiskit.primitives import StatevectorEstimator
+    from qiskit_algorithms.optimizers import SPSA, COBYLA, L_BFGS_B
+    from qiskit.primitives import Estimator
     from qiskit.circuit.library import EfficientSU2
-    from qiskit.quantum_info import SparsePauliOp
+    HAS_QISKIT = True
 except ImportError:
-    print("Warning: Qiskit Nature modules not available. Adapter will not work properly.")
-    # Create dummy classes for documentation purposes
-    class ElectronicEnergy:
-        @staticmethod
-        def from_raw_integrals(*args, **kwargs):
-            return None
-    
-    class ElectronicStructureProblem:
-        def __init__(self, *args, **kwargs):
-            pass
-    
-    class JordanWignerMapper:
-        def __init__(self):
-            pass
-        
-        def map(self, *args, **kwargs):
-            return None
-    
-    class ParityMapper:
-        def __init__(self):
-            pass
-    
-    class GroundStateEigensolver:
-        def __init__(self, *args, **kwargs):
-            pass
-        
-        def solve(self, *args, **kwargs):
-            return None
-    
-    class VQE:
-        def __init__(self, *args, **kwargs):
-            pass
-    
-    class NumPyMinimumEigensolver:
-        def __init__(self):
-            pass
-    
-    class SPSA:
-        def __init__(self, *args, **kwargs):
-            pass
-    
-    class COBYLA:
-        def __init__(self, *args, **kwargs):
-            pass
-    
-    class StatevectorEstimator:
-        def __init__(self):
-            pass
-    
-    class EfficientSU2:
-        def __init__(self, *args, **kwargs):
-            pass
-    
-    class SparsePauliOp:
-        def __init__(self, *args, **kwargs):
-            pass
+    HAS_QISKIT = False
+    print("Warning: Qiskit Nature not available. Using placeholder classes.")
+    # Create placeholder classes
 
 class QiskitNatureAdapter:
-    """Connect antimatter components with Qiskit-Nature."""
+    """
+    Optimized adapter for connecting antimatter components with Qiskit Nature.
+    """
     
     def __init__(self, 
                  mapper_type: str = 'jordan_wigner',
-                 include_annihilation: bool = True):
+                 include_annihilation: bool = True,
+                 optimization_level: int = 1):
         """
-        Initialize the Qiskit-Nature adapter.
+        Initialize the Qiskit Nature adapter.
         
         Parameters:
         -----------
@@ -86,9 +36,15 @@ class QiskitNatureAdapter:
             Fermion-to-qubit mapping ('jordan_wigner' or 'parity')
         include_annihilation : bool
             Whether to include annihilation terms
+        optimization_level : int
+            Level of optimization to apply (0-3)
         """
+        if not HAS_QISKIT:
+            raise ImportError("Qiskit Nature is required for this adapter")
+        
         self.mapper_type = mapper_type
         self.include_annihilation = include_annihilation
+        self.optimization_level = optimization_level
         
         # Create appropriate mapper
         if mapper_type == 'jordan_wigner':
@@ -97,246 +53,212 @@ class QiskitNatureAdapter:
             self.mapper = ParityMapper()
         else:
             raise ValueError(f"Unknown mapper type: {mapper_type}")
+        
+        # Performance tracking
+        self.timing = {}
     
-    def convert_to_qiskit_hamiltonian(self, 
-                                     antimatter_hamiltonian: Dict, 
-                                     n_electrons: int,
-                                     n_positrons: int) -> Dict:
+    def convert_hamiltonian(self, 
+                          antimatter_hamiltonian: Dict, 
+                          molecular_data):
         """
-        Convert antimatter Hamiltonian to Qiskit operator form.
+        Convert antimatter Hamiltonian to Qiskit Nature format.
         
         Parameters:
         -----------
         antimatter_hamiltonian : Dict
             Antimatter Hamiltonian components
-        n_electrons : int
-            Number of electrons
-        n_positrons : int
-            Number of positrons
+        molecular_data : MolecularData
+            Molecular structure information
             
         Returns:
         --------
         Dict
             Qiskit operators and problem definitions
         """
-        # Extract Hamiltonian components
-        H_electron = antimatter_hamiltonian.get('H_core_electron')
-        H_positron = antimatter_hamiltonian.get('H_core_positron')
-        e_repulsion = antimatter_hamiltonian.get('electron_repulsion')
-        p_repulsion = antimatter_hamiltonian.get('positron_repulsion')
-        ep_attraction = antimatter_hamiltonian.get('electron_positron_attraction')
-        annihilation = antimatter_hamiltonian.get('annihilation') if self.include_annihilation else None
+        start_time = time.time()
+        
+        n_electrons = molecular_data.n_electrons
+        n_positrons = molecular_data.n_positrons
+        
+        # Extract hamiltonian components
+        H_e = antimatter_hamiltonian.get('H_core_electron')
+        H_p = antimatter_hamiltonian.get('H_core_positron')
+        ERI_e = antimatter_hamiltonian.get('electron_repulsion')
+        ERI_p = antimatter_hamiltonian.get('positron_repulsion')
+        EP_attr = antimatter_hamiltonian.get('electron_positron_attraction')
         
         results = {}
         
-        # Create Qiskit electronic structure problem for electrons
-        if H_electron is not None and e_repulsion is not None and n_electrons > 0:
-            # Create ElectronicEnergy from Hamiltonian components
+        # Create electronic structure problem for electrons
+        if H_e is not None and ERI_e is not None and n_electrons > 0:
+            # Create ElectronicEnergy object
             electronic_energy = ElectronicEnergy.from_raw_integrals(
-                H_electron,  # h1_a: alpha-spin one-body coefficients
-                e_repulsion  # h2_aa: alpha-alpha-spin two-body coefficients
+                H_e,  # One-body terms
+                ERI_e  # Two-body terms
             )
-                        
-            # Create problem definition
-            problem_electron = ElectronicStructureProblem(electronic_energy)
-            problem_electron.num_particles = (n_electrons, 0)  # (alpha, beta) electrons
             
-            # Map to qubit operators
-            qubit_op_electron = self.mapper.map(problem_electron.second_q_ops()[0])
+            # Create problem
+            problem_e = ElectronicStructureProblem(electronic_energy)
+            problem_e.num_particles = (n_electrons, 0)  # Alpha, beta electrons
             
-            results['electron_problem'] = problem_electron
-            results['electron_operator'] = qubit_op_electron
+            # Map to qubit operator
+            qubit_op_e = self.mapper.map(problem_e.second_q_ops()[0])
+            
+            # Optimize operator if requested
+            if self.optimization_level > 0:
+                # Apply operator optimizations
+                pass
+            
+            results['electron_problem'] = problem_e
+            results['electron_operator'] = qubit_op_e
         
-        # Create Qiskit electronic structure problem for positrons
-        if H_positron is not None and p_repulsion is not None and n_positrons > 0:
-            # Create ElectronicEnergy from Hamiltonian components
+        # Similar for positrons
+        if H_p is not None and ERI_p is not None and n_positrons > 0:
+            # Create ElectronicEnergy object
             positronic_energy = ElectronicEnergy.from_raw_integrals(
-                H_positron,
-                p_repulsion
+                H_p,
+                ERI_p
             )
             
-            # Create problem definition
-            problem_positron = ElectronicStructureProblem(positronic_energy)
-            problem_positron.num_particles = (n_positrons, 0)  # (alpha, beta) positrons
+            # Create problem
+            problem_p = ElectronicStructureProblem(positronic_energy)
+            problem_p.num_particles = (n_positrons, 0)
             
-            # Map to qubit operators
-            qubit_op_positron = self.mapper.map(problem_positron.second_q_ops()[0])
+            # Map to qubit operator
+            qubit_op_p = self.mapper.map(problem_p.second_q_ops()[0])
             
-            results['positron_problem'] = problem_positron
-            results['positron_operator'] = qubit_op_positron
+            results['positron_problem'] = problem_p
+            results['positron_operator'] = qubit_op_p
         
-        # Create a combined operator for electron-positron interactions
-        if (H_electron is not None and H_positron is not None and
-            ep_attraction is not None and n_electrons > 0 and n_positrons > 0):
-            # This is a simplified approach - full implementation would require
-            # custom fermion operators for mixed electron-positron terms
+        # Combined system handling for electron-positron interactions
+        if (H_e is not None and H_p is not None and 
+            EP_attr is not None and n_electrons > 0 and n_positrons > 0):
             
-            # Calculate number of qubits required
-            n_electron_qubits = results['electron_operator'].num_qubits
-            n_positron_qubits = results['positron_operator'].num_qubits
-            
-            # Create a combined problem
-            # This is a simplified form - a full implementation would require
-            # creating custom second-quantized operators that handle both types
-            results['combined_problem'] = {
+            # Store information for combined system
+            results['combined_info'] = {
                 'n_electrons': n_electrons,
-                'n_positrons': n_positrons,
-                'n_electron_qubits': n_electron_qubits,
-                'n_positron_qubits': n_positron_qubits,
-                'total_qubits': n_electron_qubits + n_positron_qubits
+                'n_positrons': n_positrons
             }
+            
+            # This would need custom implementation for true interaction
+            # Here's a simplified approach
+            if 'electron_operator' in results and 'positron_operator' in results:
+                # Create a composite operator for the full system
+                # This will need extension in full implementation
+                pass
+        
+        end_time = time.time()
+        self.timing['convert_hamiltonian'] = end_time - start_time
         
         return results
     
-    def adapt_vqe_for_antimatter(self, 
-                               qiskit_operators: Dict,
-                               backend = None,
-                               optimizer_name: str = 'COBYLA',
-                               ansatz_type: str = 'efficient_su2',
-                               ansatz_reps: int = 1,
-                               ansatz_entanglement: str = 'linear') -> Dict:
+    def setup_vqe(self, 
+                qiskit_operators: Dict,
+                backend = None,
+                optimizer_name: str = 'COBYLA',
+                ansatz_type: str = 'efficient_su2',
+                ansatz_depth: int = 2):
         """
-        Adapt VQE algorithm for antimatter specifics.
+        Set up VQE algorithm for antimatter systems.
         
         Parameters:
         -----------
         qiskit_operators : Dict
             Dictionary of Qiskit operators
         backend : Backend, optional
-            Qiskit backend for execution
+            Qiskit backend
         optimizer_name : str
-            Name of optimizer to use
+            Name of the optimizer
         ansatz_type : str
-            Type of ansatz circuit
-        ansatz_reps : int
-            Number of repetitions in the ansatz
-        ansatz_entanglement : str
-            Entanglement pattern in the ansatz
+            Type of ansatz to use
+        ansatz_depth : int
+            Depth/repetitions in the ansatz
             
         Returns:
         --------
         Dict
-            VQE algorithms for different parts of the problem
+            VQE configurations
         """
+        start_time = time.time()
+        
         results = {}
         
         # Set up estimator
-        estimator = StatevectorEstimator()
+        estimator = Estimator()
         
-        # Set up optimizer
+        # Configure optimizer
         if optimizer_name == 'COBYLA':
-            optimizer = COBYLA(maxiter=100)
+            optimizer = COBYLA(maxiter=1000)
         elif optimizer_name == 'SPSA':
-            optimizer = SPSA(maxiter=100)
+            optimizer = SPSA(maxiter=1000)
+        elif optimizer_name == 'L_BFGS_B':
+            optimizer = L_BFGS_B(maxiter=1000)
         else:
             raise ValueError(f"Unknown optimizer: {optimizer_name}")
         
-        # Create VQE for electron problem
+        # Configure VQE for electron problem
         if 'electron_operator' in qiskit_operators:
-            n_qubits = qiskit_operators['electron_operator'].num_qubits
+            operator = qiskit_operators['electron_operator']
+            n_qubits = operator.num_qubits
             
             # Create ansatz
             if ansatz_type == 'efficient_su2':
                 ansatz = EfficientSU2(
                     num_qubits=n_qubits,
-                    reps=ansatz_reps,
-                    entanglement=ansatz_entanglement
+                    reps=ansatz_depth,
+                    entanglement='linear'
                 )
             else:
-                # Could implement specialized ansätze here
-                ansatz = EfficientSU2(
-                    num_qubits=n_qubits,
-                    reps=ansatz_reps,
-                    entanglement=ansatz_entanglement
-                )
+                # Other ansatz types
+                ansatz = EfficientSU2(n_qubits, reps=ansatz_depth)
             
             # Create VQE instance
-            vqe_electron = VQE(
+            vqe_e = VQE(
                 estimator=estimator,
                 ansatz=ansatz,
                 optimizer=optimizer
             )
             
-            results['electron_vqe'] = vqe_electron
-            results['electron_eigensolver'] = GroundStateEigensolver(
-                self.mapper, vqe_electron
+            results['electron_vqe'] = vqe_e
+            results['electron_solver'] = GroundStateEigensolver(
+                self.mapper, vqe_e
             )
         
-        # Create VQE for positron problem
+        # Same for positron problem
         if 'positron_operator' in qiskit_operators:
-            n_qubits = qiskit_operators['positron_operator'].num_qubits
+            operator = qiskit_operators['positron_operator']
+            n_qubits = operator.num_qubits
             
             # Create ansatz
             if ansatz_type == 'efficient_su2':
                 ansatz = EfficientSU2(
                     num_qubits=n_qubits,
-                    reps=ansatz_reps,
-                    entanglement=ansatz_entanglement
+                    reps=ansatz_depth,
+                    entanglement='linear'
                 )
             else:
-                ansatz = EfficientSU2(
-                    num_qubits=n_qubits,
-                    reps=ansatz_reps,
-                    entanglement=ansatz_entanglement
-                )
+                ansatz = EfficientSU2(n_qubits, reps=ansatz_depth)
             
             # Create VQE instance
-            vqe_positron = VQE(
+            vqe_p = VQE(
                 estimator=estimator,
                 ansatz=ansatz,
                 optimizer=optimizer
             )
             
-            results['positron_vqe'] = vqe_positron
-            results['positron_eigensolver'] = GroundStateEigensolver(
-                self.mapper, vqe_positron
+            results['positron_vqe'] = vqe_p
+            results['positron_solver'] = GroundStateEigensolver(
+                self.mapper, vqe_p
             )
         
-        # For a fully combined problem, we would need a custom approach
-        # This is a simplified placeholder
-        if 'combined_problem' in qiskit_operators:
-            # This would involve a more complex implementation for
-            # handling interacting electron-positron systems
-            pass
+        end_time = time.time()
+        self.timing['setup_vqe'] = end_time - start_time
         
         return results
     
-    def create_initial_state(self, 
-                           n_electrons: int, 
-                           n_positrons: int,
-                           n_electron_orbitals: int,
-                           n_positron_orbitals: int):
-        """
-        Create an appropriate initial state for antimatter VQE.
-        
-        Parameters:
-        -----------
-        n_electrons : int
-            Number of electrons
-        n_positrons : int
-            Number of positrons
-        n_electron_orbitals : int
-            Number of electron orbitals
-        n_positron_orbitals : int
-            Number of positron orbitals
-            
-        Returns:
-        --------
-        object
-            Initial state specification for Qiskit
-        """
-        # This would create an initial state circuit
-        # For now, we'll return a placeholder
-        return {
-            'n_electrons': n_electrons,
-            'n_positrons': n_positrons,
-            'n_electron_orbitals': n_electron_orbitals,
-            'n_positron_orbitals': n_positron_orbitals
-        }
-    
     def run_ground_state_calculation(self, 
                                    qiskit_operators: Dict,
-                                   vqe_adapters: Dict,
+                                   vqe_setup: Dict,
                                    use_classical_solver: bool = False):
         """
         Run ground state calculation using Qiskit.
@@ -345,8 +267,8 @@ class QiskitNatureAdapter:
         -----------
         qiskit_operators : Dict
             Dictionary of Qiskit operators
-        vqe_adapters : Dict
-            Dictionary of VQE adapters
+        vqe_setup : Dict
+            Dictionary of VQE configurations
         use_classical_solver : bool
             Whether to use classical solver instead of VQE
             
@@ -355,49 +277,49 @@ class QiskitNatureAdapter:
         Dict
             Results of the calculation
         """
+        start_time = time.time()
+        
         results = {}
         
         # Process electron problem
         if ('electron_problem' in qiskit_operators and 
-            ('electron_eigensolver' in vqe_adapters or use_classical_solver)):
+            (('electron_solver' in vqe_setup) or use_classical_solver)):
             
             problem = qiskit_operators['electron_problem']
             
             if use_classical_solver:
-                # Use NumPy eigensolver (classical)
                 solver = GroundStateEigensolver(
                     self.mapper, NumPyMinimumEigensolver()
                 )
             else:
-                solver = vqe_adapters['electron_eigensolver']
+                solver = vqe_setup['electron_solver']
             
-            # Solve the problem
-            result = solver.solve(problem)
+            # Solve problem
+            calc_result = solver.solve(problem)
             
             # Store results
-            results['electron_energy'] = result.total_energies[0]
-            results['electron_result'] = result
+            results['electron_energy'] = calc_result.total_energies[0]
+            results['electron_result'] = calc_result
         
         # Process positron problem
         if ('positron_problem' in qiskit_operators and 
-            ('positron_eigensolver' in vqe_adapters or use_classical_solver)):
+            (('positron_solver' in vqe_setup) or use_classical_solver)):
             
             problem = qiskit_operators['positron_problem']
             
             if use_classical_solver:
-                # Use NumPy eigensolver (classical)
                 solver = GroundStateEigensolver(
                     self.mapper, NumPyMinimumEigensolver()
                 )
             else:
-                solver = vqe_adapters['positron_eigensolver']
+                solver = vqe_setup['positron_solver']
             
-            # Solve the problem
-            result = solver.solve(problem)
+            # Solve problem
+            calc_result = solver.solve(problem)
             
             # Store results
-            results['positron_energy'] = result.total_energies[0]
-            results['positron_result'] = result
+            results['positron_energy'] = calc_result.total_energies[0]
+            results['positron_result'] = calc_result
         
         # Calculate total energy
         total_energy = 0.0
@@ -407,9 +329,14 @@ class QiskitNatureAdapter:
         if 'positron_energy' in results:
             total_energy += results['positron_energy']
         
-        # Include interaction energy (if available)
-        # This would require a more elaborate implementation
+        # Add nuclear repulsion
+        nuclear_repulsion = qiskit_operators.get('nuclear_repulsion', 0.0)
+        total_energy += nuclear_repulsion
         
         results['total_energy'] = total_energy
+        results['nuclear_repulsion'] = nuclear_repulsion
+        
+        end_time = time.time()
+        self.timing['run_calculation'] = end_time - start_time
         
         return results

@@ -1,53 +1,21 @@
 """
-Antimatter Quantum Chemistry Framework
-======================================
-
-A high-performance framework for simulating antimatter systems.
+Utility functions for antimatter quantum chemistry calculations.
 """
 
-
-__version__ = "0.1.0"
-import sys
-import os
-
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-# Core imports
+import numpy as np
+from typing import Dict, Optional, Union
 from .core.molecular_data import MolecularData
-from .core.basis import (
-    GaussianBasisFunction, 
-    BasisSet, 
-    PositronBasis, 
-    MixedMatterBasis
-)
+from .core.basis import MixedMatterBasis
 from .core.integral_engine import AntimatterIntegralEngine
 from .core.hamiltonian import AntimatterHamiltonian
 from .core.scf import AntimatterSCF
 from .core.correlation import AntimatterCorrelation
 
-# Specialized physics
-from .specialized.annihilation import AnnihilationOperator
-from .specialized.relativistic import RelativisticCorrection
-
-# Qiskit integration
-try:
-    from .qiskit_integration.adapter import QiskitNatureAdapter
-    from .qiskit_integration.circuits import AntimatterCircuits
-except ImportError:
-    pass
-
-# Validation
-from .validation.validator import AntimatterValidator
-from .validation.test_suite import TestSuite
-
-# Utility functions for creating and running calculations
-from .utils import create_antimatter_calculation, run_antimatter_calculation
-
-
 def create_antimatter_calculation(
-    molecule_data,
-    basis_options=None,
-    calculation_options=None
-):
+    molecule_data: Union[Dict, MolecularData],
+    basis_options: Optional[Dict] = None,
+    calculation_options: Optional[Dict] = None
+) -> Dict:
     """
     Create a complete antimatter calculation workflow.
     
@@ -55,9 +23,9 @@ def create_antimatter_calculation(
     -----------
     molecule_data : Dict or MolecularData
         Molecular structure information
-    basis_options : Dict
+    basis_options : Dict, optional
         Options for basis set generation
-    calculation_options : Dict
+    calculation_options : Dict, optional
         Options for calculation parameters
         
     Returns:
@@ -127,8 +95,7 @@ def create_antimatter_calculation(
         'scf_solver': scf_solver
     }
 
-# Function to run a complete calculation
-def run_antimatter_calculation(configuration):
+def run_antimatter_calculation(configuration: Dict) -> Dict:
     """
     Run a complete antimatter calculation using the provided configuration.
     
@@ -159,7 +126,7 @@ def run_antimatter_calculation(configuration):
         )
         post_scf_results['mp2_energy'] = correlation.mp2_energy()
     
-    if configuration.get('calculate_annihilation', False) and hasattr(correlation, 'calculate_annihilation_rate'):
+    if configuration.get('calculate_annihilation', False) and 'correlation' in locals():
         post_scf_results['annihilation_rate'] = correlation.calculate_annihilation_rate()
     
     # Combine results

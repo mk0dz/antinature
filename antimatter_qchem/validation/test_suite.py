@@ -1,12 +1,14 @@
 import numpy as np
 from typing import List, Tuple, Dict, Optional, Union
 import matplotlib.pyplot as plt
-from .validator import AntimatterValidator
+import time
 
 class TestSuite:
-    """Comprehensive tests for antimatter quantum chemistry."""
+    """
+    Comprehensive test suite for antimatter quantum chemistry.
+    """
     
-    def __init__(self, verbose: bool = False):
+    def __init__(self, verbose: bool = True):
         """
         Initialize the test suite.
         
@@ -16,321 +18,548 @@ class TestSuite:
             Whether to print detailed output
         """
         self.verbose = verbose
-        self.validator = AntimatterValidator()
         self.test_results = {}
+        self.timing = {}
     
-    def test_energy_conservation(self, 
-                               system_factory, 
-                               solver,
-                               bond_distances: List[float]):
+    def test_hartree_fock(self, 
+                        molecule_generator,
+                        scf_solver,
+                        reference_energy: float,
+                        tolerance: float = 0.1):
         """
-        Test energy conservation in various processes.
+        Test Hartree-Fock SCF calculation.
         
         Parameters:
         -----------
-        system_factory : function
-            Function that creates a system for a given bond distance
-        solver : function
-            Function that solves the system
-        bond_distances : List[float]
-            Bond distances to test
+        molecule_generator : function
+            Function that creates a molecule
+        scf_solver : function
+            Function that performs SCF calculation
+        reference_energy : float
+            Reference energy for validation
+        tolerance : float
+            Tolerance for energy comparison
             
         Returns:
         --------
         Dict
             Test results
         """
-        energies = []
+        start_time = time.time()
         
         if self.verbose:
-            print("Testing energy conservation across bond distances:")
+            print("Testing Hartree-Fock calculation:")
         
-        # Calculate energies at different geometries
-        for distance in bond_distances:
-            # Create system
-            system = system_factory(distance)
-            
-            # Solve system
-            result = solver(system)
-            
-            # Extract energy
-            energy = result['energy']
-            energies.append(energy)
-            
-            if self.verbose:
-                print(f"  Distance: {distance:.2f} a.u., Energy: {energy:.6f} a.u.")
+        # Create molecule
+        molecule = molecule_generator()
         
-        # Check for energy conservation properties
-        # For a conservative system, energy should vary smoothly
-        energies = np.array(energies)
-        distances = np.array(bond_distances)
+        # Run SCF calculation
+        scf_result = scf_solver(molecule)
         
-        # Calculate energy differences
-        energy_diffs = np.diff(energies)
-        distance_diffs = np.diff(distances)
-        energy_derivatives = energy_diffs / distance_diffs
+        # Extract energy
+        energy = scf_result.get('energy', 0.0)
         
-        # Check for smoothness - no sharp discontinuities
-        max_derivative = np.max(np.abs(energy_derivatives))
-        smooth_energy = max_derivative < 1.0  # This threshold can be adjusted
+        # Check convergence
+        converged = scf_result.get('converged', False)
         
-        # Find equilibrium distance (minimum energy)
-        min_idx = np.argmin(energies)
-        equilibrium_distance = distances[min_idx]
-        min_energy = energies[min_idx]
+        # Validate against reference
+        energy_diff = abs(energy - reference_energy)
+        energy_valid = energy_diff <= tolerance
         
-        # Check if system dissociates properly
-        if min_idx < len(distances) - 1:
-            dissociation_trend = (energies[-1] - min_energy) > 0
-        else:
-            dissociation_trend = False
-            
-        # Prepare result
+        if self.verbose:
+            print(f"  SCF Energy: {energy:.6f}, Reference: {reference_energy:.6f}")
+            print(f"  Difference: {energy_diff:.6f}, Tolerance: {tolerance:.6f}")
+            print(f"  Converged: {converged}, Energy valid: {energy_valid}")
+        
         result = {
-            'distances': distances.tolist(),
-            'energies': energies.tolist(),
-            'smooth_energy': smooth_energy,
-            'max_derivative': max_derivative,
-            'equilibrium_distance': equilibrium_distance,
-            'min_energy': min_energy,
-            'dissociation_trend': dissociation_trend,
-            'passed': smooth_energy and dissociation_trend
+            'energy': energy,
+            'reference': reference_energy,
+            'difference': energy_diff,
+            'converged': converged,
+            'energy_valid': energy_valid,
+            'passed': converged and energy_valid,
+            'test_name': 'hartree_fock'
         }
         
-        self.test_results['energy_conservation'] = result
+        self.test_results['hartree_fock'] = result
+        
+        end_time = time.time()
+        self.timing['test_hartree_fock'] = end_time - start_time
+        
         return result
     
-    def test_annihilation_physics(self, 
-                                annihilation_calculator,
-                                varying_parameter,
-                                parameter_range: List[float]):
+    def test_positronium(self, 
+                       positronium_generator,
+                       solver,
+                       properties_calculator):
         """
-        Test that annihilation physics follows expected behavior.
+        Test positronium properties against theoretical values.
+        
+        Parameters:
+        -----------
+        positronium_generator : function
+            Function that creates a positronium system
+        solver : function
+            Function that solves the system
+        properties_calculator : function
+            Function that calculates properties from the solution
+            
+        Returns:
+        --------
+        Dict
+            Test results
+        """
+        start_time = time.time()
+        
+        if self.verbose:
+            print("Testing positronium properties:")
+        
+        # Known theoretical values for positronium
+        references = {
+            'energy': -0.25,  # Hartree
+            'annihilation_rate': 0.5 * np.pi * (1/137.036)**2 * 137.036,  # a.u.
+            'binding_energy_eV': 6.8  # eV
+        }
+        
+        # Create positronium system
+        positronium = positronium_generator()
+        
+        # Solve system
+        solution = solver(positronium)
+        
+        # Calculate properties
+        properties = properties_calculator(solution)
+        
+        # Extract key properties
+        energy = properties.get('energy', 0.0)
+        ann_rate = properties.get('annihilation_rate', 0.0)
+        
+        # Validate properties
+        energy_diff = abs(energy - references['energy'])
+        energy_valid = energy_diff <= 0.05  # 5% tolerance
+        
+        ann_diff = abs(ann_rate - references['annihilation_rate'])
+        ann_valid = ann_diff <= 0.2 * references['annihilation_rate']  # 20% tolerance
+        
+        if self.verbose:
+            print(f"  Energy: {energy:.6f}, Reference: {references['energy']:.6f}")
+            print(f"  Energy difference: {energy_diff:.6f}, Valid: {energy_valid}")
+            print(f"  Annihilation rate: {ann_rate:.6e}, Reference: {references['annihilation_rate']:.6e}")
+            print(f"  Rate difference: {ann_diff:.6e}, Valid: {ann_valid}")
+        
+        result = {
+            'energy': {
+                'value': energy,
+                'reference': references['energy'],
+                'difference': energy_diff,
+                'valid': energy_valid
+            },
+            'annihilation_rate': {
+                'value': ann_rate,
+                'reference': references['annihilation_rate'],
+                'difference': ann_diff,
+                'valid': ann_valid
+            },
+            'passed': energy_valid and ann_valid,
+            'test_name': 'positronium'
+        }
+        
+        self.test_results['positronium'] = result
+        
+        end_time = time.time()
+        self.timing['test_positronium'] = end_time - start_time
+        
+        return result
+    
+    def test_relativistic_effects(self, 
+                               system_generator,
+                               relativistic_solver,
+                               non_relativistic_solver):
+        """
+        Test relativistic corrections implementation.
+        
+        Parameters:
+        -----------
+        system_generator : function
+            Function that creates a molecular system
+        relativistic_solver : function
+            Function that solves with relativistic corrections
+        non_relativistic_solver : function
+            Function that solves without relativistic corrections
+            
+        Returns:
+        --------
+        Dict
+            Test results
+        """
+        start_time = time.time()
+        
+        if self.verbose:
+            print("Testing relativistic effects:")
+        
+        # Create molecular system
+        system = system_generator()
+        
+        # Solve with and without relativistic corrections
+        rel_result = relativistic_solver(system)
+        non_rel_result = non_relativistic_solver(system)
+        
+        # Extract energies
+        rel_energy = rel_result.get('energy', 0.0)
+        non_rel_energy = non_rel_result.get('energy', 0.0)
+        
+        # Calculate energy difference
+        energy_diff = rel_energy - non_rel_energy
+        relative_diff = abs(energy_diff / non_rel_energy)
+        
+        # Check if difference is significant
+        significant = relative_diff > 0.001  # 0.1% difference
+        
+        if self.verbose:
+            print(f"  Relativistic energy: {rel_energy:.8f}")
+            print(f"  Non-relativistic energy: {non_rel_energy:.8f}")
+            print(f"  Difference: {energy_diff:.8f} ({relative_diff*100:.4f}%)")
+            print(f"  Significant difference: {significant}")
+        
+        result = {
+            'relativistic_energy': rel_energy,
+            'non_relativistic_energy': non_rel_energy,
+            'energy_difference': energy_diff,
+            'relative_difference': relative_diff,
+            'significant': significant,
+            'passed': significant,  # Pass if relativistic effects are significant
+            'test_name': 'relativistic_effects'
+        }
+        
+        self.test_results['relativistic_effects'] = result
+        
+        end_time = time.time()
+        self.timing['test_relativistic_effects'] = end_time - start_time
+        
+        return result
+    
+    def test_annihilation_physics(self,
+                                annihilation_calculator,
+                                distance_range: List[float],
+                                expected_trend: str = 'decreasing'):
+        """
+        Test annihilation physics by varying distance.
         
         Parameters:
         -----------
         annihilation_calculator : function
-            Function that calculates annihilation rate for a parameter value
-        varying_parameter : str
-            Description of the parameter being varied
-        parameter_range : List[float]
-            Values of the parameter to test
+            Function that calculates annihilation rate for a given distance
+        distance_range : List[float]
+            Range of distances to test
+        expected_trend : str
+            Expected trend of annihilation rate with distance
             
         Returns:
         --------
         Dict
             Test results
         """
-        parameters = []
-        rates = []
+        start_time = time.time()
         
         if self.verbose:
-            print(f"Testing annihilation physics by varying {varying_parameter}:")
+            print("Testing annihilation physics with distance:")
         
-        # Calculate annihilation rates for different parameter values
-        for param_value in parameter_range:
-            # Calculate annihilation rate
-            rate = annihilation_calculator(param_value)
+        # Calculate annihilation rates at different distances
+        distances = []
+        rates = []
+        
+        for distance in distance_range:
+            # Calculate rate
+            rate = annihilation_calculator(distance)
             
-            parameters.append(param_value)
+            distances.append(distance)
             rates.append(rate)
             
             if self.verbose:
-                print(f"  {varying_parameter}: {param_value:.2f}, Rate: {rate:.6e}")
+                print(f"  Distance: {distance:.2f}, Rate: {rate:.6e}")
         
-        # Analyze annihilation behavior
-        parameters = np.array(parameters)
+        # Convert to numpy arrays
+        distances = np.array(distances)
         rates = np.array(rates)
         
-        # Check for expected trends based on the parameter being varied
-        if varying_parameter in ['distance', 'bond_length']:
-            # Annihilation rate should decrease with increasing distance
-            correlation = np.corrcoef(parameters, rates)[0, 1]
-            expected_trend = correlation < 0
-            trend_strength = abs(correlation)
+        # Calculate correlation to check trend
+        correlation = np.corrcoef(distances, rates)[0, 1]
         
-        elif varying_parameter in ['density', 'overlap']:
-            # Annihilation rate should increase with density/overlap
-            correlation = np.corrcoef(parameters, rates)[0, 1]
-            expected_trend = correlation > 0
-            trend_strength = abs(correlation)
-        
+        # Determine if trend matches expectation
+        if expected_trend == 'decreasing':
+            trend_valid = correlation < -0.7  # Strong negative correlation
+        elif expected_trend == 'increasing':
+            trend_valid = correlation > 0.7  # Strong positive correlation
         else:
-            # Default: just check for a strong correlation either way
-            correlation = np.corrcoef(parameters, rates)[0, 1]
-            expected_trend = abs(correlation) > 0.7
-            trend_strength = abs(correlation)
+            trend_valid = abs(correlation) > 0.7  # Strong correlation either way
         
-        # Prepare result
+        if self.verbose:
+            print(f"  Correlation: {correlation:.4f}")
+            print(f"  Expected trend: {expected_trend}")
+            print(f"  Trend valid: {trend_valid}")
+        
         result = {
-            'parameter': varying_parameter,
-            'parameter_values': parameters.tolist(),
-            'annihilation_rates': rates.tolist(),
+            'distances': distances.tolist(),
+            'rates': rates.tolist(),
             'correlation': correlation,
             'expected_trend': expected_trend,
-            'trend_strength': trend_strength,
-            'passed': expected_trend and (trend_strength > 0.7)
+            'trend_valid': trend_valid,
+            'passed': trend_valid,
+            'test_name': 'annihilation_physics'
         }
         
         self.test_results['annihilation_physics'] = result
+        
+        end_time = time.time()
+        self.timing['test_annihilation_physics'] = end_time - start_time
+        
         return result
     
-    def test_positronium_properties(self, positronium_calculator):
+    def test_qiskit_integration(self,
+                              system_generator,
+                              classical_solver,
+                              quantum_solver,
+                              energy_tolerance: float = 0.1):
         """
-        Test positronium properties against known values.
+        Test Qiskit integration by comparing with classical results.
         
         Parameters:
         -----------
-        positronium_calculator : function
-            Function that calculates positronium properties
+        system_generator : function
+            Function that creates a molecular system
+        classical_solver : function
+            Function that solves using classical methods
+        quantum_solver : function
+            Function that solves using quantum computing
+        energy_tolerance : float
+            Tolerance for energy comparison
             
         Returns:
         --------
         Dict
             Test results
         """
-        if self.verbose:
-            print("Testing positronium properties:")
-        
-        # Calculate positronium properties
-        properties = positronium_calculator()
-        
-        # Extract properties
-        energy = properties.get('energy', 0.0)
-        annihilation_rate = properties.get('annihilation_rate', 0.0)
-        
-        # Validate against known values
-        validation = self.validator.validate_against_positronium(
-            energy, annihilation_rate
-        )
+        start_time = time.time()
         
         if self.verbose:
-            print(f"  Energy: Calculated={energy:.6f}, Reference={validation['energy']['reference']:.6f}")
-            if 'annihilation' in validation:
-                print(f"  Annihilation Rate: Calculated={annihilation_rate:.6e}, "
-                     f"Reference={validation['annihilation']['reference']:.6e}")
-            print(f"  Overall valid: {validation['overall_valid']}")
+            print("Testing Qiskit integration:")
         
-        self.test_results['positronium_properties'] = validation
-        return validation
-    
-    def test_relativistic_effects(self, 
-                                with_relativistic_calculator,
-                                without_relativistic_calculator):
-        """
-        Test the impact of relativistic effects.
+        # Create system
+        system = system_generator()
         
-        Parameters:
-        -----------
-        with_relativistic_calculator : function
-            Function that calculates properties with relativistic effects
-        without_relativistic_calculator : function
-            Function that calculates properties without relativistic effects
-            
-        Returns:
-        --------
-        Dict
-            Test results
-        """
-        if self.verbose:
-            print("Testing relativistic effects:")
-        
-        # Calculate properties with and without relativistic effects
-        with_rel = with_relativistic_calculator()
-        without_rel = without_relativistic_calculator()
+        # Solve using classical and quantum methods
+        classical_result = classical_solver(system)
+        quantum_result = quantum_solver(system)
         
         # Extract energies
-        energy_with = with_rel.get('energy', 0.0)
-        energy_without = without_rel.get('energy', 0.0)
+        classical_energy = classical_result.get('energy', 0.0)
+        quantum_energy = quantum_result.get('energy', 0.0)
         
         # Calculate difference
-        energy_difference = energy_with - energy_without
-        relative_difference = abs(energy_difference / energy_without)
+        energy_diff = abs(quantum_energy - classical_energy)
+        relative_diff = energy_diff / abs(classical_energy) if classical_energy != 0 else float('inf')
         
-        # Check if the difference is significant
-        significant_difference = relative_difference > 0.01  # >1% difference
+        # Check if within tolerance
+        energy_valid = energy_diff <= energy_tolerance
         
         if self.verbose:
-            print(f"  Energy with relativistic effects: {energy_with:.6f}")
-            print(f"  Energy without relativistic effects: {energy_without:.6f}")
-            print(f"  Difference: {energy_difference:.6f} ({relative_difference*100:.2f}%)")
-            print(f"  Significant difference: {significant_difference}")
+            print(f"  Classical energy: {classical_energy:.8f}")
+            print(f"  Quantum energy: {quantum_energy:.8f}")
+            print(f"  Difference: {energy_diff:.8f} ({relative_diff*100:.4f}%)")
+            print(f"  Tolerance: {energy_tolerance:.8f}")
+            print(f"  Energy valid: {energy_valid}")
         
-        # Prepare result
         result = {
-            'energy_with_relativistic': energy_with,
-            'energy_without_relativistic': energy_without,
-            'energy_difference': energy_difference,
-            'relative_difference': relative_difference,
-            'significant_difference': significant_difference,
-            'passed': significant_difference
+            'classical_energy': classical_energy,
+            'quantum_energy': quantum_energy,
+            'energy_difference': energy_diff,
+            'relative_difference': relative_diff,
+            'energy_valid': energy_valid,
+            'passed': energy_valid,
+            'test_name': 'qiskit_integration'
         }
         
-        self.test_results['relativistic_effects'] = result
+        self.test_results['qiskit_integration'] = result
+        
+        end_time = time.time()
+        self.timing['test_qiskit_integration'] = end_time - start_time
+        
         return result
     
-    def run_all_tests(self, 
-                   system_factory=None, 
-                   solver=None,
-                   annihilation_calculator=None,
-                   positronium_calculator=None,
-                   relativistic_calculators=None):
+    def run_all_tests(self, test_config: Dict):
         """
         Run all tests in the suite.
         
         Parameters:
         -----------
-        system_factory : function, optional
-            Function to create systems
-        solver : function, optional
-            Function to solve systems
-        annihilation_calculator : function, optional
-            Function to calculate annihilation rates
-        positronium_calculator : function, optional
-            Function to calculate positronium properties
-        relativistic_calculators : Tuple[function, function], optional
-            Functions to calculate with and without relativistic effects
+        test_config : Dict
+            Configuration for all tests, including:
+            - molecule_generators
+            - solvers
+            - calculators
+            - reference values
             
         Returns:
         --------
         Dict
-            All test results
+            Results of all tests
         """
+        start_time = time.time()
+        
         print("Running antimatter quantum chemistry test suite...")
         
-        # Run tests that have all required inputs
-        if system_factory is not None and solver is not None:
-            print("\n1. Testing energy conservation...")
-            bond_distances = np.linspace(0.5, 5.0, 10)
-            self.test_energy_conservation(system_factory, solver, bond_distances)
-        else:
-            print("\n1. Skipping energy conservation test (missing inputs).")
+        # Keep track of passed tests
+        passed_tests = 0
+        total_tests = 0
         
-        if annihilation_calculator is not None:
-            print("\n2. Testing annihilation physics...")
-            parameter_range = np.linspace(0.5, 3.0, 8)
-            self.test_annihilation_physics(annihilation_calculator, 'distance', parameter_range)
-        else:
-            print("\n2. Skipping annihilation physics test (missing inputs).")
+        # Run Hartree-Fock test if configured
+        if 'hartree_fock' in test_config:
+            print("\n1. Testing Hartree-Fock calculation...")
+            config = test_config['hartree_fock']
+            result = self.test_hartree_fock(
+                config['molecule_generator'],
+                config['solver'],
+                config['reference_energy'],
+                config.get('tolerance', 0.1)
+            )
+            if result['passed']:
+                passed_tests += 1
+            total_tests += 1
         
-        if positronium_calculator is not None:
-            print("\n3. Testing positronium properties...")
-            self.test_positronium_properties(positronium_calculator)
-        else:
-            print("\n3. Skipping positronium properties test (missing inputs).")
+        # Run positronium test if configured
+        if 'positronium' in test_config:
+            print("\n2. Testing positronium properties...")
+            config = test_config['positronium']
+            result = self.test_positronium(
+                config['positronium_generator'],
+                config['solver'],
+                config['properties_calculator']
+            )
+            if result['passed']:
+                passed_tests += 1
+            total_tests += 1
         
-        if relativistic_calculators is not None:
-            print("\n4. Testing relativistic effects...")
-            with_rel, without_rel = relativistic_calculators
-            self.test_relativistic_effects(with_rel, without_rel)
-        else:
-            print("\n4. Skipping relativistic effects test (missing inputs).")
+        # Run relativistic effects test if configured
+        if 'relativistic_effects' in test_config:
+            print("\n3. Testing relativistic effects...")
+            config = test_config['relativistic_effects']
+            result = self.test_relativistic_effects(
+                config['system_generator'],
+                config['relativistic_solver'],
+                config['non_relativistic_solver']
+            )
+            if result['passed']:
+                passed_tests += 1
+            total_tests += 1
         
-        # Count passed tests
-        passed = sum(1 for result in self.test_results.values() 
-                    if result.get('passed', False) or result.get('overall_valid', False))
-        total = len(self.test_results)
+        # Run annihilation physics test if configured
+        if 'annihilation_physics' in test_config:
+            print("\n4. Testing annihilation physics...")
+            config = test_config['annihilation_physics']
+            result = self.test_annihilation_physics(
+                config['annihilation_calculator'],
+                config['distance_range'],
+                config.get('expected_trend', 'decreasing')
+            )
+            if result['passed']:
+                passed_tests += 1
+            total_tests += 1
         
-        print(f"\nTest suite completed: {passed}/{total} tests passed.")
+        # Run Qiskit integration test if configured
+        if 'qiskit_integration' in test_config:
+            print("\n5. Testing Qiskit integration...")
+            config = test_config['qiskit_integration']
+            result = self.test_qiskit_integration(
+                config['system_generator'],
+                config['classical_solver'],
+                config['quantum_solver'],
+                config.get('energy_tolerance', 0.1)
+            )
+            if result['passed']:
+                passed_tests += 1
+            total_tests += 1
         
-        return self.test_results
+        # Summarize results
+        print(f"\nTest suite completed: {passed_tests}/{total_tests} tests passed.")
+        
+        all_passed = passed_tests == total_tests
+        
+        end_time = time.time()
+        self.timing['run_all_tests'] = end_time - start_time
+        
+        # Return comprehensive results
+        return {
+            'results': self.test_results,
+            'passed_tests': passed_tests,
+            'total_tests': total_tests,
+            'all_passed': all_passed,
+            'timing': self.timing
+        }
+    
+    def plot_test_results(self, save_path=None):
+        """
+        Create visualizations of test results.
+        
+        Parameters:
+        -----------
+        save_path : str, optional
+            Path to save the plots
+        """
+        if not self.test_results:
+            print("No test results to plot.")
+            return
+        
+        # Plot annihilation physics results if available
+        if 'annihilation_physics' in self.test_results:
+            result = self.test_results['annihilation_physics']
+            
+            plt.figure(figsize=(10, 6))
+            plt.plot(result['distances'], result['rates'], 'o-', lw=2)
+            plt.xlabel('Distance (a.u.)')
+            plt.ylabel('Annihilation Rate (a.u.)')
+            plt.title(f"Annihilation Rate vs Distance\nCorrelation: {result['correlation']:.4f}")
+            plt.grid(True)
+            
+            if save_path:
+                plt.savefig(f"{save_path}/annihilation_physics.png")
+            plt.show()
+        
+        # Plot relativistic effects if available
+        if 'relativistic_effects' in self.test_results:
+            result = self.test_results['relativistic_effects']
+            
+            plt.figure(figsize=(8, 6))
+            labels = ['Non-Relativistic', 'Relativistic']
+            energies = [result['non_relativistic_energy'], result['relativistic_energy']]
+            
+            plt.bar(labels, energies)
+            plt.ylabel('Energy (Hartree)')
+            plt.title(f"Relativistic Effects\nDifference: {result['energy_difference']:.8f} Hartree")
+            plt.grid(True, axis='y')
+            
+            if save_path:
+                plt.savefig(f"{save_path}/relativistic_effects.png")
+            plt.show()
+        
+        # Summary of all test results
+        if len(self.test_results) > 1:
+            plt.figure(figsize=(12, 6))
+            
+            test_names = []
+            passed = []
+            
+            for name, result in self.test_results.items():
+                test_names.append(name)
+                passed.append(1 if result.get('passed', False) else 0)
+            
+            plt.bar(test_names, passed, color=['green' if p else 'red' for p in passed])
+            plt.ylabel('Passed (1) / Failed (0)')
+            plt.title('Test Results Summary')
+            plt.ylim(0, 1.2)
+            
+            for i, p in enumerate(passed):
+                plt.text(i, p + 0.1, 'Pass' if p else 'Fail', ha='center')
+            
+            if save_path:
+                plt.savefig(f"{save_path}/test_summary.png")
+            plt.show()

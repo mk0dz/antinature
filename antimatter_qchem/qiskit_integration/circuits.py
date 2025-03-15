@@ -1,54 +1,27 @@
 import numpy as np
 from typing import List, Tuple, Dict, Optional, Union
+import time
 
-# Import Qiskit modules
+# Import Qiskit components conditionally
 try:
     from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister
     from qiskit.circuit import Parameter
     from qiskit.circuit.library import EfficientSU2, NLocal
+    HAS_QISKIT = True
 except ImportError:
-    print("Warning: Qiskit modules not available. Circuit class will not work properly.")
-    # Create dummy classes for documentation
-    class QuantumCircuit:
-        def __init__(self, *args, **kwargs):
-            pass
-        
-        def h(self, *args, **kwargs):
-            return self
-        
-        def x(self, *args, **kwargs):
-            return self
-        
-        def cx(self, *args, **kwargs):
-            return self
-        
-        def measure_all(self, *args, **kwargs):
-            return self
-    
-    class QuantumRegister:
-        def __init__(self, *args, **kwargs):
-            pass
-    
-    class ClassicalRegister:
-        def __init__(self, *args, **kwargs):
-            pass
-    
-    class Parameter:
-        def __init__(self, *args, **kwargs):
-            pass
-    
-    class EfficientSU2:
-        def __init__(self, *args, **kwargs):
-            pass
-    
-    class NLocal:
-        def __init__(self, *args, **kwargs):
-            pass
+    HAS_QISKIT = False
+    print("Warning: Qiskit not available. Using placeholder classes.")
+    # Create placeholder classes
 
 class AntimatterCircuits:
-    """Specialized quantum circuits for antimatter simulation."""
+    """
+    Specialized quantum circuits for antimatter simulation.
+    """
     
-    def __init__(self, n_electron_qubits: int = 0, n_positron_qubits: int = 0):
+    def __init__(self, 
+                 n_electron_qubits: int = 0, 
+                 n_positron_qubits: int = 0,
+                 optimization_level: int = 1):
         """
         Initialize the antimatter circuits generator.
         
@@ -58,10 +31,19 @@ class AntimatterCircuits:
             Number of qubits for electron representation
         n_positron_qubits : int
             Number of qubits for positron representation
+        optimization_level : int
+            Level of circuit optimization (0-3)
         """
+        if not HAS_QISKIT:
+            raise ImportError("Qiskit is required for this module")
+        
         self.n_electron_qubits = n_electron_qubits
         self.n_positron_qubits = n_positron_qubits
         self.n_total_qubits = n_electron_qubits + n_positron_qubits
+        self.optimization_level = optimization_level
+        
+        # Performance tracking
+        self.timing = {}
     
     def create_registers(self):
         """
@@ -83,17 +65,14 @@ class AntimatterCircuits:
             registers['positron_q'] = QuantumRegister(self.n_positron_qubits, 'p')
             registers['positron_c'] = ClassicalRegister(self.n_positron_qubits, 'pc')
         
-        # Create auxiliary registers if needed
+        # Create auxiliary register for interaction/annihilation
         if self.n_electron_qubits > 0 and self.n_positron_qubits > 0:
-            # Add auxiliary qubit for annihilation process or interaction
             registers['aux_q'] = QuantumRegister(1, 'aux')
             registers['aux_c'] = ClassicalRegister(1, 'auxc')
         
         return registers
     
-    def hartree_fock_initial_state(self, 
-                                 n_electrons: int, 
-                                 n_positrons: int) -> QuantumCircuit:
+    def hartree_fock_initial_state(self, n_electrons: int, n_positrons: int):
         """
         Create a circuit with Hartree-Fock initial state.
         
@@ -109,43 +88,43 @@ class AntimatterCircuits:
         QuantumCircuit
             Circuit with Hartree-Fock initial state
         """
+        start_time = time.time()
+        
         registers = self.create_registers()
         
-        # Combine registers for the circuit
+        # Combine registers
         qregs = []
         cregs = []
         
-        if 'electron_q' in registers:
-            qregs.append(registers['electron_q'])
-            cregs.append(registers['electron_c'])
+        for reg_type in ['electron_q', 'positron_q', 'aux_q']:
+            if reg_type in registers:
+                qregs.append(registers[reg_type])
         
-        if 'positron_q' in registers:
-            qregs.append(registers['positron_q'])
-            cregs.append(registers['positron_c'])
-        
-        if 'aux_q' in registers:
-            qregs.append(registers['aux_q'])
-            cregs.append(registers['aux_c'])
+        for reg_type in ['electron_c', 'positron_c', 'aux_c']:
+            if reg_type in registers:
+                cregs.append(registers[reg_type])
         
         # Create circuit
         circuit = QuantumCircuit(*qregs, *cregs)
         
-        # Apply X gates to create Hartree-Fock state
-        # For electron qubits (assuming Jordan-Wigner mapping)
-        if 'electron_q' in registers and n_electrons > 0:
-            electron_reg = registers['electron_q']
-            for i in range(min(n_electrons, self.n_electron_qubits)):
-                circuit.x(electron_reg[i])
+        # Apply X gates for Hartree-Fock state
         
-        # For positron qubits
+        # For electrons
+        if 'electron_q' in registers and n_electrons > 0:
+            for i in range(min(n_electrons, self.n_electron_qubits)):
+                circuit.x(registers['electron_q'][i])
+        
+        # For positrons
         if 'positron_q' in registers and n_positrons > 0:
-            positron_reg = registers['positron_q']
             for i in range(min(n_positrons, self.n_positron_qubits)):
-                circuit.x(positron_reg[i])
+                circuit.x(registers['positron_q'][i])
+        
+        end_time = time.time()
+        self.timing['hartree_fock_state'] = end_time - start_time
         
         return circuit
     
-    def annihilation_circuit(self) -> QuantumCircuit:
+    def annihilation_circuit(self):
         """
         Create a quantum circuit for simulating annihilation.
         
@@ -154,9 +133,11 @@ class AntimatterCircuits:
         QuantumCircuit
             Circuit implementing annihilation operators
         """
+        start_time = time.time()
+        
         registers = self.create_registers()
         
-        # Ensure we have both electron and positron registers
+        # Ensure we have all necessary registers
         if ('electron_q' not in registers or 
             'positron_q' not in registers or 
             'aux_q' not in registers):
@@ -173,128 +154,29 @@ class AntimatterCircuits:
         )
         
         # Implement annihilation detector
-        # This is a simplified approach - a full implementation would include
-        # more details about specific annihilation mechanisms
-        
-        # Example: Detect if an electron and positron are both in the first orbital
         e_qubit = registers['electron_q'][0]
         p_qubit = registers['positron_q'][0]
         aux_qubit = registers['aux_q'][0]
         
-        # Initialize aux qubit in |0⟩
+        # Initialize aux qubit in superposition
         circuit.h(aux_qubit)
         
-        # Control operation to detect annihilation
+        # Apply controlled operations to detect annihilation
         circuit.cx(e_qubit, aux_qubit)
         circuit.cx(p_qubit, aux_qubit)
         
-        # Alternative approach with controlled-Z gate
-        # circuit.h(aux_qubit)
-        # circuit.cz(e_qubit, aux_qubit)
-        # circuit.cz(p_qubit, aux_qubit)
-        # circuit.h(aux_qubit)
-        
-        # Add measurement
+        # Add measurements
         circuit.measure_all()
         
+        end_time = time.time()
+        self.timing['annihilation_circuit'] = end_time - start_time
+        
         return circuit
-    
-    def extended_vqe_ansatz(self, 
-                          reps: int = 1, 
-                          entanglement: str = 'full',
-                          interaction_reps: int = 1) -> QuantumCircuit:
-        """
-        VQE ansatz extended for positronic states.
-        
-        Parameters:
-        -----------
-        reps : int
-            Number of repetitions in the ansatz
-        entanglement : str
-            Entanglement pattern
-        interaction_reps : int
-            Number of repetitions for electron-positron interaction layers
-            
-        Returns:
-        --------
-        QuantumCircuit
-            Extended VQE ansatz circuit
-        """
-        registers = self.create_registers()
-        
-        # Circuit parts
-        circuits = {}
-        
-        # Create separate circuits for electrons and positrons
-        if 'electron_q' in registers and self.n_electron_qubits > 0:
-            # Create electron ansatz with unique parameter prefix
-            circuits['electron'] = EfficientSU2(
-                num_qubits=self.n_electron_qubits,
-                reps=reps,
-                entanglement=entanglement,
-                parameter_prefix='e_theta'  # Add this parameter
-            )
-
-        if 'positron_q' in registers and self.n_positron_qubits > 0:
-            # Create positron ansatz with different parameter prefix
-            circuits['positron'] = EfficientSU2(
-                num_qubits=self.n_positron_qubits,
-                reps=reps,
-                entanglement=entanglement,
-                parameter_prefix='p_theta'  # Add this parameter
-            )
-        
-        # Create interaction circuit if both types present
-        if ('electron_q' in registers and 'positron_q' in registers and
-            self.n_electron_qubits > 0 and self.n_positron_qubits > 0):
-            
-            # Create a full circuit
-            full_circuit = QuantumCircuit(
-                registers['electron_q'],
-                registers['positron_q']
-            )
-            
-            # Add electron ansatz
-            if 'electron' in circuits:
-                full_circuit.compose(circuits['electron'], 
-                                    qubits=range(self.n_electron_qubits),
-                                    inplace=True)
-            
-            # Add positron ansatz
-            if 'positron' in circuits:
-                full_circuit.compose(circuits['positron'], 
-                                   qubits=range(self.n_electron_qubits, 
-                                                self.n_electron_qubits + self.n_positron_qubits),
-                                   inplace=True)
-            
-            # Add interaction layers
-            # This connects electron and positron qubits
-            for _ in range(interaction_reps):
-                # Add CNOT gates between electron and positron qubits
-                # Connect each electron qubit to each positron qubit
-                for i in range(min(self.n_electron_qubits, self.n_positron_qubits)):
-                    e_idx = i % self.n_electron_qubits
-                    p_idx = self.n_electron_qubits + (i % self.n_positron_qubits)
-                    
-                    # Add a CNOT gate
-                    full_circuit.cx(e_idx, p_idx)
-            
-            return full_circuit
-        
-        # If only one type is present, return that circuit
-        if 'electron' in circuits:
-            return circuits['electron']
-        
-        if 'positron' in circuits:
-            return circuits['positron']
-        
-        # Default empty circuit
-        return QuantumCircuit()
     
     def particle_preserving_ansatz(self, 
                                  n_electrons: int, 
                                  n_positrons: int,
-                                 reps: int = 1) -> QuantumCircuit:
+                                 reps: int = 2):
         """
         Create an ansatz that preserves particle number.
         
@@ -312,36 +194,156 @@ class AntimatterCircuits:
         QuantumCircuit
             Particle-preserving ansatz circuit
         """
-        # This would implement a specialized ansatz that
-        # preserves the number of particles
-        # For demonstration, we'll return a simple circuit
-        circuit = self.hartree_fock_initial_state(n_electrons, n_positrons)
+        start_time = time.time()
         
+        # Start with Hartree-Fock state
+        circuit = self.hartree_fock_initial_state(n_electrons, n_positrons)
         registers = self.create_registers()
         
         # Apply particle-preserving operations
         if 'electron_q' in registers and self.n_electron_qubits >= 2:
-            # Add SWAP-like operations that preserve particle number
+            # Add operations that preserve particle number
             for rep in range(reps):
                 for i in range(self.n_electron_qubits - 1):
-                    # Apply parametrized swap operation
+                    # Create a parametrized swap-like operation
                     theta = Parameter(f'e_θ_{rep}_{i}')
                     
-                    # Parametrized swap (preserves particle number)
+                    # Implement parametrized swap that preserves particle number
                     circuit.cx(registers['electron_q'][i], registers['electron_q'][i+1])
                     circuit.rx(theta, registers['electron_q'][i+1])
                     circuit.cx(registers['electron_q'][i], registers['electron_q'][i+1])
         
-        # Similar operations for positrons
+        # Similar for positrons
         if 'positron_q' in registers and self.n_positron_qubits >= 2:
             for rep in range(reps):
                 for i in range(self.n_positron_qubits - 1):
-                    # Apply parametrized swap operation
                     theta = Parameter(f'p_θ_{rep}_{i}')
                     
-                    # Parametrized swap
                     circuit.cx(registers['positron_q'][i], registers['positron_q'][i+1])
                     circuit.rx(theta, registers['positron_q'][i+1])
                     circuit.cx(registers['positron_q'][i], registers['positron_q'][i+1])
         
+        # Add electron-positron interaction if both are present
+        if ('electron_q' in registers and 'positron_q' in registers and
+            self.n_electron_qubits > 0 and self.n_positron_qubits > 0):
+            
+            # Add interaction between electron and positron qubits
+            for rep in range(reps):
+                for i in range(min(self.n_electron_qubits, self.n_positron_qubits)):
+                    e_idx = i % self.n_electron_qubits
+                    p_idx = i % self.n_positron_qubits
+                    
+                    # Parametrized interaction
+                    theta = Parameter(f'ep_θ_{rep}_{i}')
+                    
+                    # Implement interaction
+                    circuit.cx(registers['electron_q'][e_idx], registers['positron_q'][p_idx])
+                    circuit.rz(theta, registers['positron_q'][p_idx])
+                    circuit.cx(registers['electron_q'][e_idx], registers['positron_q'][p_idx])
+        
+        end_time = time.time()
+        self.timing['particle_preserving_ansatz'] = end_time - start_time
+        
         return circuit
+    
+    def antimatter_vqe_ansatz(self, 
+                            reps: int = 2, 
+                            entanglement: str = 'linear',
+                            interaction_reps: int = 1):
+        """
+        Create a VQE ansatz optimized for antimatter systems.
+        
+        Parameters:
+        -----------
+        reps : int
+            Number of repetitions in the ansatz
+        entanglement : str
+            Entanglement pattern
+        interaction_reps : int
+            Number of repetitions for interaction layers
+            
+        Returns:
+        --------
+        QuantumCircuit
+            Antimatter VQE ansatz
+        """
+        start_time = time.time()
+        
+        registers = self.create_registers()
+        
+        # Circuit components
+        circuits = {}
+        
+        # Create separate ansatze for electrons and positrons
+        if 'electron_q' in registers and self.n_electron_qubits > 0:
+            circuits['electron'] = EfficientSU2(
+                num_qubits=self.n_electron_qubits,
+                reps=reps,
+                entanglement=entanglement,
+                parameter_prefix='e_theta'
+            )
+        
+        if 'positron_q' in registers and self.n_positron_qubits > 0:
+            circuits['positron'] = EfficientSU2(
+                num_qubits=self.n_positron_qubits,
+                reps=reps,
+                entanglement=entanglement,
+                parameter_prefix='p_theta'
+            )
+        
+        # Create full circuit if both types present
+        if ('electron_q' in registers and 'positron_q' in registers and
+            self.n_electron_qubits > 0 and self.n_positron_qubits > 0):
+            
+            # Create combined circuit
+            full_circuit = QuantumCircuit(
+                registers['electron_q'],
+                registers['positron_q']
+            )
+            
+            # Add electron ansatz
+            if 'electron' in circuits:
+                full_circuit.compose(
+                    circuits['electron'],
+                    qubits=range(self.n_electron_qubits),
+                    inplace=True
+                )
+            
+            # Add positron ansatz
+            if 'positron' in circuits:
+                full_circuit.compose(
+                    circuits['positron'],
+                    qubits=range(self.n_electron_qubits, 
+                                self.n_electron_qubits + self.n_positron_qubits),
+                    inplace=True
+                )
+            
+            # Add interaction layers
+            for _ in range(interaction_reps):
+                # Connect electron and positron qubits
+                for i in range(min(self.n_electron_qubits, self.n_positron_qubits)):
+                    e_idx = i % self.n_electron_qubits
+                    p_idx = self.n_electron_qubits + (i % self.n_positron_qubits)
+                    
+                    # Add parametrized interaction
+                    theta = Parameter(f'ep_theta_{i}')
+                    
+                    # Implement interaction
+                    full_circuit.cx(e_idx, p_idx)
+                    full_circuit.rz(theta, p_idx)
+                    full_circuit.cx(e_idx, p_idx)
+            
+            end_time = time.time()
+            self.timing['vqe_ansatz'] = end_time - start_time
+            
+            return full_circuit
+        
+        # If only one type is present, return that circuit
+        if 'electron' in circuits:
+            return circuits['electron']
+        
+        if 'positron' in circuits:
+            return circuits['positron']
+        
+        # Default empty circuit
+        return QuantumCircuit()

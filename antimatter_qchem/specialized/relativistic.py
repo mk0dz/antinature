@@ -1,120 +1,230 @@
 import numpy as np
 from typing import List, Tuple, Dict, Optional
 from scipy.linalg import eigh
-
-from antimatter_qchem.core import *
+import time
 
 class RelativisticCorrection:
-    """Relativistic corrections for antimatter systems."""
+    """
+    Optimized relativistic corrections for antimatter systems.
+    """
     
     def __init__(self, 
-                 hamiltonian: Dict, 
-                 basis: 'MixedMatterBasis',
-                 nuclei: List[Tuple[str, float, np.ndarray]],
-                 is_positronic: bool = False):
+                 hamiltonian,
+                 basis_set,
+                 molecular_data,
+                 correction_type='perturbative'):
         """
         Initialize relativistic correction calculator.
         
         Parameters:
         -----------
         hamiltonian : Dict
-            Dictionary containing Hamiltonian components
-        basis : MixedMatterBasis
-            Basis set for the calculation
-        nuclei : List[Tuple[str, float, np.ndarray]]
-            List of nuclei (element, charge, position)
-        is_positronic : bool
-            Whether calculations are for positrons (different corrections)
+            Hamiltonian components
+        basis_set : MixedMatterBasis
+            Basis set for calculations
+        molecular_data : MolecularData
+            Molecular structure information
+        correction_type : str
+            Type of relativistic correction ('perturbative', 'zora', 'dkh')
         """
         self.hamiltonian = hamiltonian
-        self.basis = basis
-        self.nuclei = nuclei
-        self.is_positronic = is_positronic
+        self.basis_set = basis_set
+        self.molecular_data = molecular_data
+        self.correction_type = correction_type
         
         # Speed of light in atomic units
         self.c = 137.036
+        self.c_squared = self.c * self.c
         
-        # Select appropriate basis set based on particle type
-        if is_positronic:
-            self.particle_basis = basis.positron_basis
-        else:
-            self.particle_basis = basis.electron_basis
-            
-        # Calculate relativistic integrals during initialization if the integral engine is available
-        if hasattr(basis, 'integral_engine'):
-            rel_matrices = self.calculate_relativistic_integrals(basis.integral_engine)
-            # Store calculated matrices in the hamiltonian
-            for key, matrix in rel_matrices.items():
-                self.hamiltonian[key] = matrix
+        # Extract nuclei information
+        self.nuclei = molecular_data.nuclei
+        
+        # Matrices for relativistic corrections
+        self.matrices = {}
+        
+        # Performance tracking
+        self.timing = {}
     
-    def calculate_relativistic_integrals(self, integral_engine):
+    def calculate_relativistic_integrals(self):
         """
-        Calculate all relativistic correction integrals.
+        Calculate all relativistic correction integrals efficiently.
         
-        Parameters:
-        -----------
-        integral_engine : AntimatterIntegralEngine
-            Engine for computing integrals
-            
         Returns:
         --------
         Dict
             Dictionary of relativistic correction matrices
         """
-        n_basis = len(self.particle_basis.basis_functions)
+        start_time = time.time()
+        
+        n_e_basis = self.basis_set.n_electron_basis
+        n_p_basis = self.basis_set.n_positron_basis
         
         # Initialize matrices
-        mass_velocity = np.zeros((n_basis, n_basis))
-        darwin = np.zeros((n_basis, n_basis))
-        spin_orbit = np.zeros((n_basis, n_basis, 3))  # 3 components for vector
+        mass_velocity_e = np.zeros((n_e_basis, n_e_basis))
+        darwin_e = np.zeros((n_e_basis, n_e_basis))
         
-        # Calculate mass-velocity correction
-        for i in range(n_basis):
-            for j in range(n_basis):
-                func_i = self.particle_basis.basis_functions[i]
-                func_j = self.particle_basis.basis_functions[j]
-                
-                mass_velocity[i, j] = integral_engine.mass_velocity_integral(func_i, func_j)
+        # For positrons if needed
+        mass_velocity_p = np.zeros((n_p_basis, n_p_basis)) if n_p_basis > 0 else None
+        darwin_p = np.zeros((n_p_basis, n_p_basis)) if n_p_basis > 0 else None
         
-        # Calculate Darwin term
-        for i in range(n_basis):
-            for j in range(n_basis):
-                func_i = self.particle_basis.basis_functions[i]
-                func_j = self.particle_basis.basis_functions[j]
+        # Calculate mass-velocity correction for electrons
+        # This is related to p⁴ operator: -1/(8c²) ∇⁴
+        # Approximate using second derivatives of kinetic energy
+        for i in range(n_e_basis):
+            for j in range(i+1):  # Use symmetry
+                # Get basis functions
+                func_i = self.basis_set.electron_basis.basis_functions[i]
+                func_j = self.basis_set.electron_basis.basis_functions[j]
                 
-                darwin_sum = 0.0
-                for element, charge, position in self.nuclei:
-                    # For positrons, the sign of the interaction changes
-                    effective_charge = charge * (-1 if self.is_positronic else 1)
+                # Calculate using integral engine if available
+                if hasattr(self.basis_set, 'integral_engine'):
+                    mass_velocity_e[i, j] = self.basis_set.integral_engine.mass_velocity_integral(func_i, func_j)
+                else:
+                    # Approximate using relationship with kinetic energy
+                    # For Gaussian basis functions, related to second derivative of kinetic energy
+                    alpha = func_i.exponent
+                    beta = func_j.exponent
+                    mv_factor = alpha * beta * (alpha + beta)
                     
-                    darwin_sum += effective_charge * integral_engine.darwin_integral(
-                        func_i, func_j, position
-                    )
+                    # Get overlap integral
+                    overlap = self.basis_set.overlap_integral(i, j)
+                    mass_velocity_e[i, j] = mv_factor * overlap
                 
-                darwin[i, j] = darwin_sum
+                # Use symmetry
+                if i != j:
+                    mass_velocity_e[j, i] = mass_velocity_e[i, j]
+        
+        # Calculate Darwin term for electrons
+        # This is: (πZ/2c²) δ(r)
+        for i in range(n_e_basis):
+            for j in range(i+1):  # Use symmetry
+                darwin_sum = 0.0
+                
+                for _, charge, position in self.nuclei:
+                    # For Gaussian basis functions at a nucleus
+                    func_i = self.basis_set.electron_basis.basis_functions[i]
+                    func_j = self.basis_set.electron_basis.basis_functions[j]
+                    
+                    if hasattr(self.basis_set, 'integral_engine'):
+                        darwin_term = self.basis_set.integral_engine.darwin_integral(
+                            func_i, func_j, position
+                        )
+                    else:
+                        # Approximate using value at nucleus
+                        r_i = func_i.evaluate(position)
+                        r_j = func_j.evaluate(position)
+                        darwin_term = r_i * r_j
+                    
+                    darwin_sum += charge * darwin_term
+                
+                darwin_e[i, j] = darwin_sum
+                
+                # Use symmetry
+                if i != j:
+                    darwin_e[j, i] = darwin_e[i, j]
+        
+        # Similar calculations for positrons if needed
+        if n_p_basis > 0:
+            # Implement positron relativistic corrections
+            # Change signs as appropriate for positrons
+            pass
         
         # Scale by physical constants
-        mass_velocity *= -1.0 / (8.0 * self.c * self.c)
-        darwin *= np.pi / (2.0 * self.c * self.c)
+        mass_velocity_e *= -1.0 / (8.0 * self.c_squared)
+        darwin_e *= np.pi / (2.0 * self.c_squared)
         
-        # For spin-orbit coupling, we would need angular momentum integrals
-        # This is a simplified implementation
+        if n_p_basis > 0:
+            mass_velocity_p *= -1.0 / (8.0 * self.c_squared)
+            darwin_p *= np.pi / (2.0 * self.c_squared)
         
-        rel_matrices = {
-            'mass_velocity': mass_velocity,
-            'darwin': darwin,
-            'spin_orbit': spin_orbit
-        }
+        # Store results
+        self.matrices['mass_velocity_e'] = mass_velocity_e
+        self.matrices['darwin_e'] = darwin_e
         
-        # Store calculated matrices in the hamiltonian
-        for key, matrix in rel_matrices.items():
-            self.hamiltonian[key] = matrix
-            
-        return rel_matrices
+        if n_p_basis > 0:
+            self.matrices['mass_velocity_p'] = mass_velocity_p
+            self.matrices['darwin_p'] = darwin_p
+        
+        end_time = time.time()
+        self.timing['calculate_integrals'] = end_time - start_time
+        
+        return self.matrices
     
-    def scalar_relativistic_correction(self, wavefunction: Dict):
+    def apply_relativistic_corrections(self):
         """
-        Calculate scalar relativistic corrections (mass-velocity, Darwin).
+        Apply relativistic corrections to the Hamiltonian.
+        
+        Returns:
+        --------
+        Dict
+            Corrected Hamiltonian matrices
+        """
+        start_time = time.time()
+        
+        # Make sure relativistic matrices are calculated
+        if not self.matrices:
+            self.calculate_relativistic_integrals()
+        
+        corrected_hamiltonian = dict(self.hamiltonian)
+        
+        if self.correction_type == 'perturbative':
+            # Add mass-velocity and Darwin terms to core Hamiltonian
+            H_core_e = corrected_hamiltonian.get('H_core_electron')
+            if H_core_e is not None:
+                corrected_hamiltonian['H_core_electron'] = (
+                    H_core_e + 
+                    self.matrices['mass_velocity_e'] + 
+                    self.matrices['darwin_e']
+                )
+            
+            # Similar for positrons
+            if self.basis_set.n_positron_basis > 0:
+                H_core_p = corrected_hamiltonian.get('H_core_positron')
+                if H_core_p is not None:
+                    corrected_hamiltonian['H_core_positron'] = (
+                        H_core_p + 
+                        self.matrices['mass_velocity_p'] + 
+                        self.matrices['darwin_p']
+                    )
+        
+        elif self.correction_type == 'zora':
+            # Implement ZORA corrections
+            # This modifies the kinetic energy term: T → T / (1 - V/2c²)
+            H_core_e = corrected_hamiltonian.get('H_core_electron')
+            T_e = corrected_hamiltonian.get('kinetic_e')
+            V_e = corrected_hamiltonian.get('nuclear_attraction_e')
+            
+            if H_core_e is not None and T_e is not None and V_e is not None:
+                # ZORA correction to kinetic energy
+                n_basis = T_e.shape[0]
+                T_zora = np.zeros_like(T_e)
+                
+                for i in range(n_basis):
+                    for j in range(n_basis):
+                        # Diagonal approximation for potential
+                        denom = 1.0 - V_e[i, i] / (2.0 * self.c_squared)
+                        if abs(denom) > 1e-10:
+                            T_zora[i, j] = T_e[i, j] / denom
+                
+                # Update Hamiltonian
+                corrected_hamiltonian['kinetic_e'] = T_zora
+                corrected_hamiltonian['H_core_electron'] = H_core_e - T_e + T_zora
+            
+            # Similar for positrons
+        
+        elif self.correction_type == 'dkh':
+            # Douglas-Kroll-Hess implementation would go here
+            # This is more complex and would involve matrix diagonalization
+            pass
+        
+        end_time = time.time()
+        self.timing['apply_corrections'] = end_time - start_time
+        
+        return corrected_hamiltonian
+    
+    def calculate_relativistic_energy_correction(self, wavefunction):
+        """
+        Calculate relativistic energy correction for a given wavefunction.
         
         Parameters:
         -----------
@@ -126,154 +236,44 @@ class RelativisticCorrection:
         Dict
             Relativistic energy corrections
         """
-        # Extract density matrix
-        if self.is_positronic:
-            density = wavefunction.get('P_positron')
-        else:
-            density = wavefunction.get('P_electron')
+        # Make sure relativistic matrices are calculated
+        if not self.matrices:
+            self.calculate_relativistic_integrals()
         
-        if density is None:
-            return {'mass_velocity': 0.0, 'darwin': 0.0, 'total': 0.0}
+        # Extract density matrices
+        P_e = wavefunction.get('P_electron')
+        P_p = wavefunction.get('P_positron')
         
-        # Get relativistic correction matrices from hamiltonian
-        mass_velocity = self.hamiltonian.get('mass_velocity')
-        darwin = self.hamiltonian.get('darwin')
+        # Calculate corrections
+        mv_correction_e = 0.0
+        darwin_correction_e = 0.0
         
-        if mass_velocity is None or darwin is None:
-            # If matrices aren't in hamiltonian already, try to calculate them
-            if hasattr(self.basis, 'integral_engine'):
-                rel_matrices = self.calculate_relativistic_integrals(self.basis.integral_engine)
-                mass_velocity = rel_matrices['mass_velocity']
-                darwin = rel_matrices['darwin']
-            else:
-                return {'mass_velocity': 0.0, 'darwin': 0.0, 'total': 0.0}
+        if P_e is not None:
+            mv_correction_e = np.sum(P_e * self.matrices['mass_velocity_e'])
+            darwin_correction_e = np.sum(P_e * self.matrices['darwin_e'])
         
-        # Calculate expectation values
-        e_mv = np.sum(density * mass_velocity)
-        e_darwin = np.sum(density * darwin)
+        mv_correction_p = 0.0
+        darwin_correction_p = 0.0
+        
+        if P_p is not None and self.basis_set.n_positron_basis > 0:
+            mv_correction_p = np.sum(P_p * self.matrices['mass_velocity_p'])
+            darwin_correction_p = np.sum(P_p * self.matrices['darwin_p'])
+        
+        # Total corrections
+        total_mv = mv_correction_e + mv_correction_p
+        total_darwin = darwin_correction_e + darwin_correction_p
+        total_correction = total_mv + total_darwin
         
         return {
-            'mass_velocity': e_mv,
-            'darwin': e_darwin,
-            'total': e_mv + e_darwin
+            'mass_velocity': {
+                'electron': mv_correction_e,
+                'positron': mv_correction_p,
+                'total': total_mv
+            },
+            'darwin': {
+                'electron': darwin_correction_e,
+                'positron': darwin_correction_p,
+                'total': total_darwin
+            },
+            'total': total_correction
         }
-    
-    def spin_orbit_coupling(self, wavefunction: Dict):
-        """
-        Calculate spin-orbit coupling terms.
-        
-        Parameters:
-        -----------
-        wavefunction : Dict
-            Wavefunction information
-            
-        Returns:
-        --------
-        float
-            Spin-orbit coupling energy
-        """
-        # This would require a full treatment of spin and angular momentum
-        # For simplicity, we return a placeholder
-        return 0.0
-    
-    def zora_implementation(self, hamiltonian: Dict):
-        """
-        Zero-order regular approximation for relativistic effects.
-        
-        This is a more accurate approach for relativistic corrections,
-        especially for heavier elements.
-        
-        Parameters:
-        -----------
-        hamiltonian : Dict
-            Hamiltonian components
-            
-        Returns:
-        --------
-        Dict
-            Modified Hamiltonian with ZORA corrections
-        """
-        # Extract kinetic energy matrix
-        if self.is_positronic:
-            T = hamiltonian.get('positron_kinetic')
-            V = hamiltonian.get('positron_nuclear')
-        else:
-            T = hamiltonian.get('kinetic')
-            V = hamiltonian.get('nuclear_attraction')
-        
-        if T is None or V is None:
-            return hamiltonian
-        
-        # ZORA correction to kinetic energy: T → T / (1 - V/2c²)
-        # This is a simplified implementation
-        n_basis = T.shape[0]
-        T_zora = np.zeros_like(T)
-        
-        for i in range(n_basis):
-            for j in range(n_basis):
-                # Diagonal approximation to V/2c²
-                denom = 1.0 - V[i, i] / (2.0 * self.c * self.c)
-                if denom != 0:
-                    T_zora[i, j] = T[i, j] / denom
-        
-        # Create modified Hamiltonian
-        zora_hamiltonian = hamiltonian.copy()
-        
-        if self.is_positronic:
-            zora_hamiltonian['positron_kinetic'] = T_zora
-        else:
-            zora_hamiltonian['kinetic'] = T_zora
-        
-        return zora_hamiltonian
-    
-    def apply_relativistic_corrections(self, hamiltonian: Dict, 
-                                      method: str = 'perturbative'):
-        """
-        Apply relativistic corrections to a Hamiltonian.
-        
-        Parameters:
-        -----------
-        hamiltonian : Dict
-            Original Hamiltonian
-        method : str
-            Method for applying corrections ('perturbative', 'zora', 'dkh')
-            
-        Returns:
-        --------
-        Dict
-            Corrected Hamiltonian
-        """
-        # First make sure relativistic matrices are calculated and stored in hamiltonian
-        if 'mass_velocity' not in hamiltonian or 'darwin' not in hamiltonian:
-            if hasattr(self.basis, 'integral_engine'):
-                rel_matrices = self.calculate_relativistic_integrals(self.basis.integral_engine)
-                for key, matrix in rel_matrices.items():
-                    hamiltonian[key] = matrix
-        
-        if method == 'perturbative':
-            # Add mass-velocity and Darwin terms to core Hamiltonian
-            if self.is_positronic:
-                H_core = hamiltonian.get('H_core_positron')
-                mv = hamiltonian.get('positron_mass_velocity')
-                darwin = hamiltonian.get('positron_darwin')
-                
-                if H_core is not None and mv is not None and darwin is not None:
-                    hamiltonian['H_core_positron'] = H_core + mv + darwin
-            else:
-                H_core = hamiltonian.get('H_core_electron')
-                mv = hamiltonian.get('mass_velocity')
-                darwin = hamiltonian.get('darwin')
-                
-                if H_core is not None and mv is not None and darwin is not None:
-                    hamiltonian['H_core_electron'] = H_core + mv + darwin
-        
-        elif method == 'zora':
-            # Apply ZORA approach
-            hamiltonian = self.zora_implementation(hamiltonian)
-        
-        elif method == 'dkh':
-            # Douglas-Kroll-Hess method would be implemented here
-            # This is a more accurate approach for very heavy elements
-            pass
-        
-        return hamiltonian
