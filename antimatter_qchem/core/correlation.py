@@ -2,7 +2,6 @@ import numpy as np
 from typing import List, Tuple, Dict, Optional
 from scipy.linalg import eigh, inv, sqrtm
 
-
 class AntimatterCorrelation:
     """
     Post-SCF correlation methods for antimatter systems.
@@ -97,7 +96,7 @@ class AntimatterCorrelation:
         # Calculate electron-electron MP2 contribution
         if self.C_electron is not None and self.electron_repulsion is not None:
             # Determine occupied and virtual orbitals
-            n_occ_e = n_electrons // 2  # Assuming closed-shell
+            n_occ_e = self.scf_result.get('n_electrons', 0) // 2  # Assuming closed-shell
             n_mo_e = self.C_electron.shape[1]
             
             # Transform ERIs to MO basis
@@ -117,7 +116,7 @@ class AntimatterCorrelation:
         
         # Calculate positron-positron MP2 contribution (similar to electrons)
         if self.C_positron is not None and self.positron_repulsion is not None:
-            n_occ_p = n_positrons // 2  # Assuming closed-shell
+            n_occ_p = self.scf_result.get('n_positrons', 0) // 2  # Assuming closed-shell
             n_mo_p = self.C_positron.shape[1]
             
             eri_mo_p = self.transform_eri_to_mo_basis(self.positron_repulsion, self.C_positron)
@@ -135,10 +134,42 @@ class AntimatterCorrelation:
         # Calculate electron-positron MP2 contribution (more complex)
         if (include_electron_positron and self.C_electron is not None and 
             self.C_positron is not None and self.electron_positron_attraction is not None):
-            # This would require transforming the electron-positron integrals
-            # and applying a modified MP2 formula for different particle types
-            # Simplified approach for demonstration
-            pass
+            
+            n_occ_e = self.scf_result.get('n_electrons', 0) // 2
+            n_mo_e = self.C_electron.shape[1]
+            n_occ_p = self.scf_result.get('n_positrons', 0) // 2
+            n_mo_p = self.C_positron.shape[1]
+            
+            # Transform electron-positron attraction integrals to MO basis
+            # This requires a different transformation due to mixed basis
+            eri_mo_ep = np.zeros((n_mo_e, n_mo_e, n_mo_p, n_mo_p))
+            
+            for p in range(n_mo_e):
+                for q in range(n_mo_e):
+                    for r in range(n_mo_p):
+                        for s in range(n_mo_p):
+                            for μ in range(self.C_electron.shape[0]):
+                                for ν in range(self.C_electron.shape[0]):
+                                    for λ in range(self.C_positron.shape[0]):
+                                        for σ in range(self.C_positron.shape[0]):
+                                            eri_mo_ep[p, q, r, s] += (
+                                                self.C_electron[μ, p] * 
+                                                self.C_electron[ν, q] * 
+                                                self.C_positron[λ, r] * 
+                                                self.C_positron[σ, s] * 
+                                                self.electron_positron_attraction[μ, ν, λ, σ]
+                                            )
+            
+            # Calculate electron-positron MP2 contribution
+            for i in range(n_occ_e):
+                for j in range(n_occ_e, n_mo_e):
+                    for a in range(n_occ_p):
+                        for b in range(n_occ_p, n_mo_p):
+                            numerator = eri_mo_ep[i, j, a, b] ** 2
+                            denominator = (self.E_electron[i] - self.E_electron[j] + 
+                                          self.E_positron[a] - self.E_positron[b])
+                            
+                            mp2_energy += numerator / denominator
         
         return mp2_energy
     
@@ -166,8 +197,8 @@ class AntimatterCorrelation:
         
         # Calculate annihilation rate
         rate = 0.0
-        n_occ_e = len(self.P_electron) // 2
-        n_occ_p = len(self.P_positron) // 2
+        n_occ_e = self.scf_result.get('n_electrons', 0) // 2
+        n_occ_p = self.scf_result.get('n_positrons', 0) // 2
         
         for i in range(n_occ_e):
             for j in range(n_occ_p):
