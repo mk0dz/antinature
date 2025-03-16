@@ -12,17 +12,17 @@ import numpy as np
 
 try:
     # First import the core modules
-    from antimatter.core.molecular_data import MolecularData
-    from antimatter.core.basis import MixedMatterBasis
+    from qantimatter.core.molecular_data import MolecularData
+    from qantimatter.core.basis import MixedMatterBasis
     
     # Now try to import Qiskit integration modules
-    from antimatter.qiskit_integration import (
+    from qantimatter.qiskit_integration import (
         AntimatterQuantumSolver,
         AntimatterQuantumSystems,
         AntimatterVQESolver,
         AntimatterCircuits
     )
-    from antimatter.qiskit_integration.adapter import QiskitNatureAdapter
+    from qantimatter.qiskit_integration.adapter import QiskitNatureAdapter
     
     print("✅ Successfully imported antimatter package including Qiskit integration")
     

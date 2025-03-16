@@ -2,8 +2,8 @@
 Antimatter Quantum Chemistry Framework
 ======================================
 
-A high-performance framework for simulating antimatter systems, including
-positronium, anti-hydrogen, and other exotic matter-antimatter configurations.
+A high-performance framework for simulating qantimatter systems, including
+positronium, anti-hydrogen, and other exotic matter-qantimatter configurations.
 
 The package includes specialized algorithms for positrons and positron-electron
 interactions, relativistic corrections, and electron-positron annihilation processes.
@@ -31,7 +31,7 @@ from .specialized.positronium import PositroniumSCF
 from .specialized.visualization import AntimatterVisualizer
 
 # Utilities
-from .utils import create_antimatter_calculation
+from .utils import create_qantimatter_calculation
 
 # Attempt to import optional quantum components
 try:

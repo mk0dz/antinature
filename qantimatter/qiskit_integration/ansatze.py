@@ -1,4 +1,4 @@
-# antimatter/qiskit_integration/ansatze.py
+# qantimatter/qiskit_integration/ansatze.py
 
 import numpy as np
 from typing import List, Optional, Union, Dict
@@ -14,7 +14,7 @@ except ImportError:
 
 class AntimatterAnsatz:
     """
-    Collection of specialized quantum ansätze for antimatter systems.
+    Collection of specialized quantum ansätze for qantimatter systems.
     """
     
     @staticmethod

@@ -1,4 +1,4 @@
-# antimatter/qiskit_integration/vqe_solver.py
+# qantimatter/qiskit_integration/vqe_solver.py
 
 import numpy as np
 from typing import List, Dict, Optional, Union, Tuple
@@ -20,7 +20,7 @@ from .ansatze import AntimatterAnsatz
 
 class AntimatterVQESolver:
     """
-    VQE solver for antimatter systems using specialized ansätze.
+    VQE solver for qantimatter systems using specialized ansätze.
     """
     
     def __init__(self, 
@@ -28,7 +28,7 @@ class AntimatterVQESolver:
                 max_iterations: int = 500,  # Increased from 200
                 shots: int = 2048):  # Increased from 1024
         """
-        Initialize the VQE solver with antimatter-specific optimizations.
+        Initialize the VQE solver with qantimatter-specific optimizations.
         
         Parameters:
         -----------
@@ -240,7 +240,7 @@ class AntimatterVQESolver:
                    initial_point: Optional[np.ndarray] = None,
                    apply_correction: bool = True) -> Dict:
         """
-        Solve an antimatter system using VQE with specialized ansätze.
+        Solve an qantimatter system using VQE with specialized ansätze.
         
         Parameters:
         -----------

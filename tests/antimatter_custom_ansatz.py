@@ -2,8 +2,8 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-from antimatter.qiskit_integration import AntimatterVQESolver
-from antimatter.qiskit_integration import AntimatterQuantumSystems
+from qantimatter.qiskit_integration import AntimatterVQESolver
+from qantimatter.qiskit_integration import AntimatterQuantumSystems
 
 def main():
     """Test specialized antimatter ansätze."""

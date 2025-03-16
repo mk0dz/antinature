@@ -3,7 +3,7 @@ from typing import List, Tuple, Dict, Optional, Union
 
 class AntimatterHamiltonian:
     """
-    Optimized Hamiltonian for antimatter molecular systems.
+    Optimized Hamiltonian for qantimatter molecular systems.
     """
     
     def __init__(self, 
@@ -13,7 +13,7 @@ class AntimatterHamiltonian:
                  include_annihilation: bool = True,
                  include_relativistic: bool = False):
         """
-        Initialize an antimatter Hamiltonian.
+        Initialize an qantimatter Hamiltonian.
         
         Parameters:
         -----------
@@ -371,7 +371,7 @@ class AntimatterHamiltonian:
     
     def build_hamiltonian(self):
         """
-        Construct the complete Hamiltonian for the antimatter system.
+        Construct the complete Hamiltonian for the qantimatter system.
         """
         # 1. Build overlap matrix
         S = self.build_overlap_matrix()

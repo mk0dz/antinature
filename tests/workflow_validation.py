@@ -4,8 +4,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import tests.workflow_positronium as workflow_positronium
 import tests.anti_hydrogen_workflow as anti_hydrogen_workflow
-from antimatter.specialized.visualization import visualize_annihilation_density
-from antimatter.specialized.visualization import plot_wavefunction
+from qantimatter.specialized.visualization import visualize_annihilation_density
+from qantimatter.specialized.visualization import plot_wavefunction
 
 def test_positronium():
     """Test positronium calculation and validate against theory."""

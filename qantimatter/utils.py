@@ -1,5 +1,5 @@
 """
-Utility functions for antimatter quantum chemistry calculations.
+Utility functions for qantimatter quantum chemistry calculations.
 """
 
 import numpy as np
@@ -83,13 +83,13 @@ def check_optional_dependencies() -> Dict[str, bool]:
     
     return dependencies
 
-def create_antimatter_calculation(
+def create_qantimatter_calculation(
     molecule_data: Union[Dict, MolecularData],
     basis_options: Optional[Dict] = None,
     calculation_options: Optional[Dict] = None
 ) -> Dict:
     """
-    Create a complete antimatter calculation workflow.
+    Create a complete qantimatter calculation workflow.
     
     Parameters:
     -----------
@@ -172,14 +172,14 @@ def create_antimatter_calculation(
     
     return scf_result
 
-def run_antimatter_calculation(configuration: Dict) -> Dict:
+def run_qantimatter_calculation(configuration: Dict) -> Dict:
     """
-    Run a complete antimatter calculation using the provided configuration.
+    Run a complete qantimatter calculation using the provided configuration.
     
     Parameters:
     -----------
     configuration : Dict
-        Configuration from create_antimatter_calculation
+        Configuration from create_qantimatter_calculation
         
     Returns:
     --------

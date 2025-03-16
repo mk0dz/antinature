@@ -20,12 +20,12 @@ except ImportError:
     import sys
     sys.exit(1)
 
-from antimatter.core.molecular_data import MolecularData
-from antimatter.core.basis import MixedMatterBasis
-from antimatter.core.integral_engine import AntimatterIntegralEngine
-from antimatter.core.hamiltonian import AntimatterHamiltonian
-from antimatter.qiskit_integration import AntimatterQuantumSolver, AntimatterQuantumSystems
-from antimatter.qiskit_integration.ansatze import AntimatterAnsatz
+from qantimatter.core.molecular_data import MolecularData
+from qantimatter.core.basis import MixedMatterBasis
+from qantimatter.core.integral_engine import AntimatterIntegralEngine
+from qantimatter.core.hamiltonian import AntimatterHamiltonian
+from qantimatter.qiskit_integration import AntimatterQuantumSolver, AntimatterQuantumSystems
+from qantimatter.qiskit_integration.ansatze import AntimatterAnsatz
 
 def main():
     print("Quantum Computing Antimatter Simulation Example")

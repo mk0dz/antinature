@@ -1,4 +1,4 @@
-# antimatter/qiskit_integration/adapter.py
+# qantimatter/qiskit_integration/adapter.py
 
 import numpy as np
 from typing import Dict, List, Optional, Tuple, Any

@@ -5,7 +5,7 @@ import time
 
 class AntimatterSCF:
     """
-    Optimized Self-Consistent Field solver for antimatter systems.
+    Optimized Self-Consistent Field solver for qantimatter systems.
     """
     
     def __init__(self, 

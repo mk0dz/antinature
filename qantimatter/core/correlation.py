@@ -4,7 +4,7 @@ from scipy.linalg import eigh, inv, sqrtm
 
 class AntimatterCorrelation:
     """
-    Post-SCF correlation methods for antimatter systems.
+    Post-SCF correlation methods for qantimatter systems.
     """
     def __init__(self, scf_result: Dict, hamiltonian: Dict, basis: 'MixedMatterBasis'):
         """
@@ -213,7 +213,7 @@ class AntimatterCorrelation:
     
     def coupled_cluster(self, level='CCSD'):
         """
-        Perform coupled-cluster calculation for the antimatter system.
+        Perform coupled-cluster calculation for the qantimatter system.
         
         Parameters:
         -----------

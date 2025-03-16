@@ -1,4 +1,4 @@
-# antimatter/core/molecular_data.py
+# qantimatter/core/molecular_data.py
 
 import numpy as np
 from typing import List, Tuple, Dict, Optional, Union
@@ -7,7 +7,7 @@ from mpl_toolkits.mplot3d import Axes3D
 
 class MolecularData:
     """
-    A comprehensive data structure for antimatter molecular systems.
+    A comprehensive data structure for qantimatter molecular systems.
     
     This class stores all necessary information about molecular structure,
     including atoms, electrons, positrons, and charges. It also provides
@@ -25,7 +25,7 @@ class MolecularData:
                  description: str = '',
                  is_positronium: bool = False):
         """
-        Initialize molecular data for an antimatter system.
+        Initialize molecular data for an qantimatter system.
         
         Parameters:
         -----------
@@ -111,7 +111,7 @@ class MolecularData:
         # Initialize additional properties
         self._nuclear_repulsion_energy = None
         self._center_of_mass = None
-        self._is_antimatter_system = (n_positrons > 0)
+        self._is_qantimatter_system = (n_positrons > 0)
     
     @staticmethod
     def _get_atomic_number(element: str) -> int:
@@ -518,7 +518,7 @@ class MolecularData:
         ax.set_zlabel('Z (Bohr)')
         
         title = f"{self.name + ': ' if self.name else ''}{self.get_formula()}"
-        if self._is_antimatter_system:
+        if self._is_qantimatter_system:
             title += " (Antimatter System)"
         ax.set_title(title)
         

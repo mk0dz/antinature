@@ -1,8 +1,8 @@
 """
-Qiskit integration module for antimatter quantum chemistry.
+Qiskit integration module for qantimatter quantum chemistry.
 
 This module provides integration with Qiskit and Qiskit-Nature
-for simulating antimatter systems on quantum computers.
+for simulating qantimatter systems on quantum computers.
 """
 
 # Check if Qiskit is available
@@ -22,7 +22,7 @@ from .adapter import QiskitNatureAdapter
 from .circuits import AntimatterCircuits, PositroniumCircuit
 from .solver import PositroniumVQESolver
 from .systems import AntimatterQuantumSystems
-from .antimatter_solver import AntimatterQuantumSolver
+from .qqantimatter_solver import AntimatterQuantumSolver
 from .vqe_solver import AntimatterVQESolver
 from .ansatze import AntimatterAnsatz
 

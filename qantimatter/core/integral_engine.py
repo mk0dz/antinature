@@ -5,7 +5,7 @@ import threading
 
 class AntimatterIntegralEngine:
     """
-    Optimized integral engine for antimatter systems with caching and threading.
+    Optimized integral engine for qantimatter systems with caching and threading.
     """
     
     def __init__(self, use_analytical: bool = True, cache_size: int = 10000):

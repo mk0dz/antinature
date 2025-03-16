@@ -1,7 +1,7 @@
 """
-Specialized physics module for antimatter quantum chemistry.
+Specialized physics module for qantimatter quantum chemistry.
 
-This module provides specialized physics components for antimatter systems,
+This module provides specialized physics components for qantimatter systems,
 including annihilation operators and relativistic corrections.
 """
 

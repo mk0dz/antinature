@@ -3,12 +3,12 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from antimatter.core.molecular_data import MolecularData
-from antimatter.core.basis import GaussianBasisFunction, BasisSet, PositronBasis, MixedMatterBasis
-from antimatter.core.integral_engine import AntimatterIntegralEngine
-from antimatter.core.hamiltonian import AntimatterHamiltonian
-from antimatter.core.scf import AntimatterSCF
-from antimatter.core.correlation import AntimatterCorrelation
+from qantimatter.core.molecular_data import MolecularData
+from qantimatter.core.basis import GaussianBasisFunction, BasisSet, PositronBasis, MixedMatterBasis
+from qantimatter.core.integral_engine import AntimatterIntegralEngine
+from qantimatter.core.hamiltonian import AntimatterHamiltonian
+from qantimatter.core.scf import AntimatterSCF
+from qantimatter.core.correlation import AntimatterCorrelation
 
 def test_molecular_data():
     print("\n=== Testing MolecularData ===")

@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 """
-Simple script to verify imports from antimatter package
+Simple script to verify imports from qantimatter package
 """
 
 import sys
 
 try:
     # Basic imports
-    import antimatter
-    from antimatter.core.molecular_data import MolecularData
-    from antimatter.core.basis import MixedMatterBasis
+    import qantimatter
+    from qantimatter.core.molecular_data import MolecularData
+    from qantimatter.core.basis import MixedMatterBasis
     
     print("✅ Imports working correctly!")
     print(f"Package version: {antimatter.__version__}")

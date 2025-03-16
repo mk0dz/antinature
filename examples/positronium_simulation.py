@@ -9,13 +9,13 @@ This example demonstrates how to set up and run a basic positronium
 
 import numpy as np
 import matplotlib.pyplot as plt
-from antimatter.core.molecular_data import MolecularData
-from antimatter.core.basis import MixedMatterBasis
-from antimatter.core.integral_engine import AntimatterIntegralEngine
-from antimatter.core.hamiltonian import AntimatterHamiltonian
-from antimatter.specialized.positronium import PositroniumSCF
-from antimatter.specialized.annihilation import AnnihilationOperator
-from antimatter.specialized.visualization import AntimatterVisualizer
+from qantimatter.core.molecular_data import MolecularData
+from qantimatter.core.basis import MixedMatterBasis
+from qantimatter.core.integral_engine import AntimatterIntegralEngine
+from qantimatter.core.hamiltonian import AntimatterHamiltonian
+from qantimatter.specialized.positronium import PositroniumSCF
+from qantimatter.specialized.annihilation import AnnihilationOperator
+from qantimatter.specialized.visualization import AntimatterVisualizer
 
 def main():
     print("Positronium Simulation Example")

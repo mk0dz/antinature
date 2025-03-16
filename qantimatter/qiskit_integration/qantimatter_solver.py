@@ -1,4 +1,4 @@
-# antimatter/qiskit_integration/antimatter_solver.py
+# qantimatter/qiskit_integration/qantimatter_solver.py
 
 import numpy as np
 from typing import Dict, List, Optional, Union, Tuple, Any
@@ -19,9 +19,9 @@ from .vqe_solver import AntimatterVQESolver
 
 class AntimatterQuantumSolver:
     """
-    Quantum solver for antimatter systems using Qiskit.
+    Quantum solver for qantimatter systems using Qiskit.
     
-    This class serves as the main interface for solving antimatter systems
+    This class serves as the main interface for solving qantimatter systems
     using quantum computing approaches, supporting VQE and exact solvers.
     """
     
@@ -32,7 +32,7 @@ class AntimatterQuantumSolver:
                 shots: int = 2048,
                 mapper_type: str = 'jordan_wigner'):
         """
-        Initialize the antimatter quantum solver.
+        Initialize the qantimatter quantum solver.
         
         Parameters:
         -----------
@@ -257,7 +257,7 @@ class AntimatterQuantumSolver:
                            reps: int = 3,
                            apply_correction: bool = False) -> Dict:
         """
-        Solve a custom antimatter system with user-provided Hamiltonian.
+        Solve a custom qantimatter system with user-provided Hamiltonian.
         
         Parameters:
         -----------
@@ -318,7 +318,7 @@ class AntimatterQuantumSolver:
                        ansatz_types: List[str] = ['specialized', 'hardware_efficient'],
                        exact: bool = True) -> Dict[str, Dict]:
         """
-        Compare different solution methods for a given antimatter system.
+        Compare different solution methods for a given qantimatter system.
         
         Parameters:
         -----------

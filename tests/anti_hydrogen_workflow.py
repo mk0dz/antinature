@@ -2,16 +2,16 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
-import antimatter
-from antimatter.core import MolecularData
-from antimatter.core.basis import MixedMatterBasis
-from antimatter.core.integral_engine import AntimatterIntegralEngine
-from antimatter.core.hamiltonian import AntimatterHamiltonian
-from antimatter.core.scf import AntimatterSCF
+import qantimatter
+from qantimatter.core import MolecularData
+from qantimatter.core.basis import MixedMatterBasis
+from qantimatter.core.integral_engine import AntimatterIntegralEngine
+from qantimatter.core.hamiltonian import AntimatterHamiltonian
+from qantimatter.core.scf import AntimatterSCF
 
-from antimatter.specialized import PositroniumSCF
-from antimatter.specialized.relativistic import RelativisticCorrection
-from antimatter.specialized.annihilation import AnnihilationOperator
+from qantimatter.specialized import PositroniumSCF
+from qantimatter.specialized.relativistic import RelativisticCorrection
+from qantimatter.specialized.annihilation import AnnihilationOperator
 
 
 

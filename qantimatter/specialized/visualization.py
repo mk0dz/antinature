@@ -1,5 +1,5 @@
 """
-Visualization functions for antimatter quantum chemistry.
+Visualization functions for qantimatter quantum chemistry.
 """
 
 import numpy as np
@@ -258,7 +258,7 @@ def plot_wavefunction(wavefunction: Dict, particle_type: str = 'electron', orbit
 
 class AntimatterVisualizer:
     """
-    Visualization tools for antimatter systems and calculation results.
+    Visualization tools for qantimatter systems and calculation results.
     """
     
     def __init__(self, style: str = 'default'):

@@ -1,7 +1,7 @@
 """
-Core components for antimatter quantum chemistry.
+Core components for qantimatter quantum chemistry.
 
-This module includes the fundamental building blocks for antimatter chemistry simulations:
+This module includes the fundamental building blocks for qantimatter chemistry simulations:
 - Basis sets for electrons and positrons
 - Molecular data structures
 - Hamiltonian construction

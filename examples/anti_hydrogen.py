@@ -9,14 +9,14 @@ This example demonstrates how to set up and run a simulation of anti-hydrogen
 
 import numpy as np
 import matplotlib.pyplot as plt
-from antimatter.core.molecular_data import MolecularData
-from antimatter.core.basis import MixedMatterBasis
-from antimatter.core.integral_engine import AntimatterIntegralEngine
-from antimatter.core.hamiltonian import AntimatterHamiltonian
-from antimatter.core.scf import AntimatterSCF
-from antimatter.specialized.annihilation import AnnihilationOperator
-from antimatter.specialized.relativistic import RelativisticCorrection
-from antimatter.specialized.visualization import AntimatterVisualizer
+from qantimatter.core.molecular_data import MolecularData
+from qantimatter.core.basis import MixedMatterBasis
+from qantimatter.core.integral_engine import AntimatterIntegralEngine
+from qantimatter.core.hamiltonian import AntimatterHamiltonian
+from qantimatter.core.scf import AntimatterSCF
+from qantimatter.specialized.annihilation import AnnihilationOperator
+from qantimatter.specialized.relativistic import RelativisticCorrection
+from qantimatter.specialized.visualization import AntimatterVisualizer
 
 def main():
     print("Anti-Hydrogen Simulation Example")

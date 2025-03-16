@@ -1,4 +1,4 @@
-# antimatter/qiskit_integration/circuits.py
+# qantimatter/qiskit_integration/circuits.py
 
 import numpy as np
 from typing import Dict, List, Optional, Union, Tuple
@@ -15,14 +15,14 @@ except ImportError:
 
 class AntimatterCircuits:
     """
-    General class for creating quantum circuits for antimatter systems.
-    Provides methods to create circuits for various antimatter systems
+    General class for creating quantum circuits for qantimatter systems.
+    Provides methods to create circuits for various qantimatter systems
     including positronium, anti-hydrogen, and more complex systems.
     """
     
     def __init__(self, n_electron_orbitals: int = 2, n_positron_orbitals: int = 2):
         """
-        Initialize antimatter circuits generator.
+        Initialize qantimatter circuits generator.
         
         Parameters:
         -----------
@@ -237,7 +237,7 @@ class AntimatterCircuits:
     
     def create_efficient_su2_ansatz(self, reps: int = 2) -> QuantumCircuit:
         """
-        Create an EfficientSU2 ansatz for the antimatter system.
+        Create an EfficientSU2 ansatz for the qantimatter system.
         
         Parameters:
         -----------

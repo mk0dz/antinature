@@ -1,4 +1,4 @@
-# antimatter/qiskit_integration/systems.py
+# qantimatter/qiskit_integration/systems.py
 
 import numpy as np
 from typing import Dict, List, Optional, Tuple, Union, Any
@@ -20,16 +20,16 @@ except ImportError:
 
 class AntimatterQuantumSystems:
     """
-    Implements various antimatter systems for quantum computation.
+    Implements various qantimatter systems for quantum computation.
     
     This class provides methods to create Hamiltonians and quantum 
-    circuits for various antimatter systems including positronium,
+    circuits for various qantimatter systems including positronium,
     anti-hydrogen, positronium molecule, and anti-helium.
     """
     
     def __init__(self, mapper_type: str = 'jordan_wigner'):
         """
-        Initialize the antimatter quantum systems.
+        Initialize the qantimatter quantum systems.
         
         Parameters:
         -----------
@@ -418,14 +418,14 @@ class AntimatterQuantumSystems:
         
         return circuit
     
-    def custom_antimatter_system(self, 
+    def custom_qantimatter_system(self, 
                                one_body: np.ndarray, 
                                two_body: np.ndarray) -> Tuple[Any, QuantumCircuit]:
         """
-        Create a Hamiltonian and circuit for a custom antimatter system.
+        Create a Hamiltonian and circuit for a custom qantimatter system.
         
         This allows users to define their own one-body and two-body
-        integrals for custom antimatter systems.
+        integrals for custom qantimatter systems.
         
         Parameters:
         -----------

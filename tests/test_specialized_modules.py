@@ -4,14 +4,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
-from antimatter.core.molecular_data import MolecularData
-from antimatter.core.basis import MixedMatterBasis
-from antimatter.core.integral_engine import AntimatterIntegralEngine
-from antimatter.core.hamiltonian import AntimatterHamiltonian
-from antimatter.core.scf import AntimatterSCF
+from qantimatter.core.molecular_data import MolecularData
+from qantimatter.core.basis import MixedMatterBasis
+from qantimatter.core.integral_engine import AntimatterIntegralEngine
+from qantimatter.core.hamiltonian import AntimatterHamiltonian
+from qantimatter.core.scf import AntimatterSCF
 
-from antimatter.specialized.relativistic import RelativisticCorrection
-from antimatter.specialized.annihilation import AnnihilationOperator
+from qantimatter.specialized.relativistic import RelativisticCorrection
+from qantimatter.specialized.annihilation import AnnihilationOperator
 
 def test_relativistic_corrections():
     print("\n=== Testing Relativistic Corrections ===")
