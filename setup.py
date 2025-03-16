@@ -9,7 +9,7 @@ setup(
     packages=find_packages(),
     install_requires=[
         "numpy>=1.20.0",
-        "scipy>=1.7.0",
+        "scipy>=1.15.2",
         "matplotlib>=3.4.0",
         "typing-extensions>=4.0.0",
     ],
