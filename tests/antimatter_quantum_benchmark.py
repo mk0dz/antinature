@@ -1,5 +1,7 @@
 # examples/antimatter_quantum_benchmark.py
 
+import os
+import time
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -12,87 +14,138 @@ except ImportError:
     from antimatter_qchem.qiskit_integration.antimatter_solver import AntimatterQuantumSolver
 
 def main():
-    """Run benchmark for all antimatter systems."""
-    print("=== Antimatter Quantum Systems Benchmark ===")
+    """Run antimatter quantum simulations and benchmark the results."""
+    print("=== Antimatter Quantum Systems Benchmark ===\n")
     
-    # Systems to test
-    systems = ['positronium', 'anti_hydrogen', 'positronium_molecule', 'anti_helium']
+    # Systems to benchmark
+    systems = [
+        'positronium',
+        'anti_hydrogen',
+        'positronium_molecule'
+    ]
     
-    # Create solver
+    # Create output directory for plots
+    os.makedirs('results', exist_ok=True)
+    
+    # Collect timing and results
+    timings = {}
+    energy_results = {}
+    
+    # Create solver with optimized settings
     solver = AntimatterQuantumSolver(
+        use_exact_solver=False,  # Use VQE by default
         optimizer_name='COBYLA',
-        shots=1024,
-        mapper_type='jordan_wigner'
+        max_iterations=300,
+        shots=1024
     )
     
-    # Results containers
-    theoretical = []
-    classical = []
-    vqe = []
-    classical_errors = []
-    vqe_errors = []
-    
-    # Run all systems
+    # Run benchmarks for each system
     for system in systems:
-        print(f"\nSolving {system}...")
-        results = solver.solve(system, use_classical=True, use_vqe=True)
+        print(f"Solving {system}...")
         
-        # Store results
-        theoretical.append(results['theoretical_energy'])
-        classical.append(results.get('classical_energy', 0.0))
-        vqe.append(results.get('vqe_energy', 0.0))
-        classical_errors.append(results.get('classical_error', 0.0))
-        vqe_errors.append(results.get('vqe_error', 0.0))
+        # Time the execution
+        start_time = time.time()
         
-        # Print results
-        print(f"  Theoretical energy: {results['theoretical_energy']:.6f} Hartree")
-        if 'classical_energy' in results:
-            print(f"  Classical energy:    {results['classical_energy']:.6f} Hartree")
-            print(f"  Classical error:     {results['classical_error']:.6f} Hartree")
-        if 'vqe_energy' in results:
-            print(f"  VQE energy:          {results['vqe_energy']:.6f} Hartree")
-            print(f"  VQE error:           {results['vqe_error']:.6f} Hartree")
-            print(f"  VQE iterations:      {results['iterations']}")
+        # Solve using specialized ansatz
+        try:
+            if system == 'positronium':
+                results = solver.solve_positronium(ansatz_type='specialized')
+            elif system == 'anti_hydrogen':
+                results = solver.solve_anti_hydrogen(ansatz_type='specialized')
+            elif system == 'positronium_molecule':
+                results = solver.solve_positronium_molecule(ansatz_type='specialized')
+            
+            energy = results['energy']
+            was_corrected = results.get('was_corrected', False)
+            raw_energy = results.get('raw_energy', energy)
+            
+            # Also try with hardware-efficient ansatz for comparison
+            if system == 'positronium':
+                he_results = solver.solve_positronium(ansatz_type='hardware_efficient')
+            elif system == 'anti_hydrogen':
+                he_results = solver.solve_anti_hydrogen(ansatz_type='hardware_efficient')
+            elif system == 'positronium_molecule':
+                he_results = solver.solve_positronium_molecule(ansatz_type='hardware_efficient')
+                
+            he_energy = he_results['energy']
+            
+            # Try exact solver for reference
+            solver.use_exact_solver = True
+            if system == 'positronium':
+                exact_results = solver.solve_positronium()
+            elif system == 'anti_hydrogen':
+                exact_results = solver.solve_anti_hydrogen()
+            elif system == 'positronium_molecule':
+                exact_results = solver.solve_positronium_molecule()
+                
+            exact_energy = exact_results['energy']
+            solver.use_exact_solver = False  # Restore VQE mode
+            
+            # Store results
+            energy_results[system] = {
+                'specialized': energy,
+                'raw_specialized': raw_energy,
+                'hardware_efficient': he_energy,
+                'exact': exact_energy,
+                'theoretical': results['theoretical_value'],
+                'was_corrected': was_corrected
+            }
+            
+            # Create visualization
+            solver.visualize_results(results, filename=f'results/{system}_specialized.png')
+            solver.visualize_results(he_results, filename=f'results/{system}_hardware.png')
+            
+            # Compare methods
+            comparison = {
+                'specialized': results,
+                'hardware_efficient': he_results,
+                'exact': exact_results
+            }
+            solver.compare_visualization(comparison, filename=f'results/{system}_comparison.png')
+            
+        except Exception as e:
+            print(f"Error solving {system}: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            energy_results[system] = {'error': str(e)}
+        
+        # Record timing
+        end_time = time.time()
+        execution_time = end_time - start_time
+        timings[system] = execution_time
+        
+        print(f"Completed in {execution_time:.2f} seconds\n")
     
-    # Plot results
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5))
+    # Print summary of results
+    print("\n=== Summary of Results ===\n")
+    for system, result in energy_results.items():
+        print(f"{system.replace('_', ' ').title()}:")
+        if 'error' in result:
+            print(f"  Error: {result['error']}")
+            continue
+            
+        theo = result['theoretical']
+        spec = result['specialized']
+        raw_spec = result.get('raw_specialized', spec)
+        hw = result['hardware_efficient']
+        exact = result['exact']
+        
+        print(f"  Theoretical value: {theo:.4f} Hartree")
+        print(f"  Specialized ansatz: {spec:.4f} Hartree (error: {abs(spec-theo):.4f})")
+        if result.get('was_corrected', False):
+            print(f"    Raw value before correction: {raw_spec:.4f} Hartree")
+        print(f"  Hardware-efficient ansatz: {hw:.4f} Hartree (error: {abs(hw-theo):.4f})")
+        print(f"  Exact solver: {exact:.4f} Hartree (error: {abs(exact-theo):.4f})")
+        print(f"  Execution time: {timings[system]:.2f} seconds\n")
     
-    # Energy comparison
-    x = np.arange(len(systems))
-    width = 0.25
+    # Create timing comparison chart
+    plt.figure(figsize=(10, 6))
+    plt.bar(timings.keys(), timings.values())
+    plt.title('Execution Time by System')
+    plt.ylabel('Time (seconds)')
+    plt.savefig('results/timing_comparison.png')
     
-    ax1.bar(x - width, theoretical, width, label='Theoretical')
-    ax1.bar(x, classical, width, label='Classical')
-    ax1.bar(x + width, vqe, width, label='VQE')
-    
-    ax1.set_ylabel('Energy (Hartree)')
-    ax1.set_title('Antimatter Systems Energy Comparison')
-    ax1.set_xticks(x)
-    ax1.set_xticklabels(systems)
-    ax1.legend()
-    
-    # Error comparison
-    ax2.bar(x - width/2, classical_errors, width, label='Classical Error')
-    ax2.bar(x + width/2, vqe_errors, width, label='VQE Error')
-    
-    ax2.set_ylabel('Error (Hartree)')
-    ax2.set_title('Solver Error Comparison')
-    ax2.set_xticks(x)
-    ax2.set_xticklabels(systems)
-    ax2.legend()
-    
-    plt.tight_layout()
-    plt.savefig('antimatter_quantum_benchmark.png')
-    plt.show()
-    
-    return {
-        'systems': systems,
-        'theoretical': theoretical,
-        'classical': classical,
-        'vqe': vqe,
-        'classical_errors': classical_errors,
-        'vqe_errors': vqe_errors
-    }
+    print("Benchmark complete. Results saved to 'results' directory.")
 
 if __name__ == "__main__":
     main()

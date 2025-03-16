@@ -254,4 +254,186 @@ def plot_wavefunction(wavefunction: Dict, particle_type: str = 'electron', orbit
         ax.set_title(f'{particle_type.capitalize()} Orbital {orbital_idx}')
     
     plt.tight_layout()
-    return fig 
+    return fig
+
+class AntimatterVisualizer:
+    """
+    Visualization tools for antimatter systems and calculation results.
+    """
+    
+    def __init__(self, style: str = 'default'):
+        """
+        Initialize visualizer with specified style.
+        
+        Parameters:
+        -----------
+        style : str
+            Matplotlib style to use ('default', 'dark_background', etc.)
+        """
+        self.style = style
+        plt.style.use(style)
+    
+    def plot_positronium_density(self, molecule, basis, scf_result, resolution=30):
+        """
+        Plot positronium density in 3D.
+        
+        Parameters:
+        -----------
+        molecule : MolecularData
+            Positronium system
+        basis : MixedMatterBasis
+            Basis set used for calculation
+        scf_result : Dict
+            Result from SCF calculation
+        resolution : int
+            Grid resolution
+            
+        Returns:
+        --------
+        Figure
+            Matplotlib figure object
+        """
+        # Create a 3D grid
+        x = np.linspace(-5, 5, resolution)
+        y = np.linspace(-5, 5, resolution)
+        z = np.linspace(-5, 5, resolution)
+        X, Y, Z = np.meshgrid(x, y, z)
+        
+        # Calculate electron and positron densities on the grid
+        electron_density = self._calculate_density(X, Y, Z, 'electron', basis, scf_result)
+        positron_density = self._calculate_density(X, Y, Z, 'positron', basis, scf_result)
+        
+        # Create plots
+        fig = plt.figure(figsize=(12, 5))
+        
+        # Electron density
+        ax1 = fig.add_subplot(121, projection='3d')
+        ax1.contour3D(X[:,:,resolution//2], Y[:,:,resolution//2], 
+                      electron_density[:,:,resolution//2], 50, cmap='Blues')
+        ax1.set_title('Electron Density')
+        
+        # Positron density
+        ax2 = fig.add_subplot(122, projection='3d')
+        ax2.contour3D(X[:,:,resolution//2], Y[:,:,resolution//2], 
+                      positron_density[:,:,resolution//2], 50, cmap='Reds')
+        ax2.set_title('Positron Density')
+        
+        plt.tight_layout()
+        return fig
+    
+    def plot_positron_density(self, molecule, basis, scf_result, resolution=30):
+        """
+        Plot positron density for anti-hydrogen or similar.
+        
+        Parameters:
+        -----------
+        molecule : MolecularData
+            Anti-hydrogen or similar system
+        basis : MixedMatterBasis
+            Basis set used for calculation
+        scf_result : Dict
+            Result from SCF calculation
+        resolution : int
+            Grid resolution
+            
+        Returns:
+        --------
+        Figure
+            Matplotlib figure object
+        """
+        # Create a 3D grid
+        x = np.linspace(-5, 5, resolution)
+        y = np.linspace(-5, 5, resolution)
+        z = np.linspace(-5, 5, resolution)
+        X, Y, Z = np.meshgrid(x, y, z)
+        
+        # Calculate positron density
+        positron_density = self._calculate_density(X, Y, Z, 'positron', basis, scf_result)
+        
+        # Create plot
+        fig = plt.figure(figsize=(8, 6))
+        ax = fig.add_subplot(111, projection='3d')
+        
+        # Plot a slice of the 3D density
+        ax.contour3D(X[:,:,resolution//2], Y[:,:,resolution//2], 
+                    positron_density[:,:,resolution//2], 50, cmap='Reds')
+        
+        # Plot density isosurfaces
+        # We need a specific value for the isosurface
+        iso_value = np.max(positron_density) * 0.3  # 30% of maximum density
+        ax.contour3D(X, Y, Z, positron_density, [iso_value], cmap='Reds', alpha=0.6)
+        
+        # Add nuclei position if known
+        for atom, position in molecule.atoms:
+            ax.scatter(position[0], position[1], position[2], color='black', s=50)
+        
+        ax.set_title(f'Positron Density - {molecule.name}')
+        ax.set_xlabel('X (bohr)')
+        ax.set_ylabel('Y (bohr)')
+        ax.set_zlabel('Z (bohr)')
+        
+        plt.tight_layout()
+        return fig
+    
+    def _calculate_density(self, X, Y, Z, particle_type, basis, scf_result):
+        """
+        Calculate electron or positron density on a grid.
+        
+        Parameters:
+        -----------
+        X, Y, Z : np.ndarray
+            Grid coordinates
+        particle_type : str
+            'electron' or 'positron'
+        basis : MixedMatterBasis
+            Basis set
+        scf_result : Dict
+            SCF calculation result
+            
+        Returns:
+        --------
+        np.ndarray
+            Density values on the grid
+        """
+        # Placeholder implementation - in a real implementation, this would 
+        # use the wavefunction from scf_result and basis functions
+        
+        # Simple Gaussian density for demonstration
+        density = np.zeros_like(X)
+        
+        # Create a density centered at the origin with some spread
+        density = np.exp(-(X**2 + Y**2 + Z**2)/2)
+        
+        # Normalize
+        density /= np.sum(density)
+        
+        return density
+    
+    def plot_annihilation_probability(self, antihydrogen_results):
+        """
+        Plot annihilation probability for an anti-hydrogen system.
+        
+        Parameters:
+        -----------
+        antihydrogen_results : Dict
+            Results from anti-hydrogen calculation
+            
+        Returns:
+        --------
+        Figure
+            Matplotlib figure
+        """
+        # Placeholder for actual implementation
+        fig, ax = plt.subplots(figsize=(8, 6))
+        
+        # Sample data for demonstration
+        r = np.linspace(0, 5, 100)
+        prob = np.exp(-r)
+        
+        ax.plot(r, prob, 'r-', linewidth=2)
+        ax.set_xlabel('Distance from nucleus (bohr)')
+        ax.set_ylabel('Annihilation probability')
+        ax.set_title('Positron-Antiproton Annihilation Probability')
+        ax.grid(True, alpha=0.3)
+        
+        return fig 

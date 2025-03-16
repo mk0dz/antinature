@@ -1,4 +1,7 @@
+LICENSE
+MANIFEST.in
 README.md
+pyproject.toml
 setup.py
 antimatter_beta.egg-info/PKG-INFO
 antimatter_beta.egg-info/SOURCES.txt
@@ -16,8 +19,13 @@ antimatter_qchem/core/molecular_data.py
 antimatter_qchem/core/scf.py
 antimatter_qchem/qiskit_integration/__init__.py
 antimatter_qchem/qiskit_integration/adapter.py
+antimatter_qchem/qiskit_integration/ansatze.py
+antimatter_qchem/qiskit_integration/antimatter_solver.py
 antimatter_qchem/qiskit_integration/circuits.py
+antimatter_qchem/qiskit_integration/simple_test.py
 antimatter_qchem/qiskit_integration/solver.py
+antimatter_qchem/qiskit_integration/systems.py
+antimatter_qchem/qiskit_integration/vqe_solver.py
 antimatter_qchem/specialized/__init__.py
 antimatter_qchem/specialized/annihilation.py
 antimatter_qchem/specialized/positronium.py
@@ -26,6 +34,15 @@ antimatter_qchem/specialized/visualization.py
 antimatter_qchem/validation/__init__.py
 antimatter_qchem/validation/test_suite.py
 antimatter_qchem/validation/validator.py
+examples/anti_hydrogen.py
+examples/positronium_simulation.py
+examples/quantum_antimatter.py
+tests/anti_hydrogen_workflow.py
+tests/antimatter_custom_ansatz.py
+tests/antimatter_quantum_benchmark.py
+tests/positronium_quantum.py
 tests/test_core_module.py
 tests/test_positronium.py
 tests/test_specialized_modules.py
+tests/workflow_positronium.py
+tests/workflow_validation.py

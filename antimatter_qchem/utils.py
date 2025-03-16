@@ -3,13 +3,85 @@ Utility functions for antimatter quantum chemistry calculations.
 """
 
 import numpy as np
-from typing import Dict, Optional, Union
+import importlib
+from typing import Dict, Optional, Union, List, Tuple
+import warnings
+
+# Import project modules
 from .core.molecular_data import MolecularData
 from .core.basis import MixedMatterBasis
 from .core.integral_engine import AntimatterIntegralEngine
 from .core.hamiltonian import AntimatterHamiltonian
 from .core.scf import AntimatterSCF
 from .core.correlation import AntimatterCorrelation
+
+def check_dependencies(dependencies: Dict[str, str]) -> Tuple[bool, List[str]]:
+    """
+    Check if all dependencies are installed with required versions.
+    
+    Parameters:
+    -----------
+    dependencies : Dict[str, str]
+        Dictionary mapping package names to required version specs
+        
+    Returns:
+    --------
+    Tuple[bool, List[str]]
+        (Success, List of missing/incompatible packages)
+    
+    Example:
+    --------
+    >>> check_dependencies({'numpy': '>=1.20.0', 'qiskit': '>=1.0.0'})
+    """
+    import pkg_resources
+    
+    missing = []
+    
+    for package, version_spec in dependencies.items():
+        try:
+            pkg_resources.require(f"{package}{version_spec}")
+        except (pkg_resources.VersionConflict, pkg_resources.DistributionNotFound):
+            missing.append(f"{package}{version_spec}")
+    
+    return len(missing) == 0, missing
+
+def check_optional_dependencies() -> Dict[str, bool]:
+    """
+    Check which optional dependencies are available.
+    
+    Returns:
+    --------
+    Dict[str, bool]
+        Dictionary indicating which optional features are available
+    """
+    dependencies = {
+        'qiskit': False,       # For quantum simulation
+        'pyscf': False,        # For advanced electronic structure
+        'openfermion': False,  # For quantum chemistry mapping
+    }
+    
+    # Check Qiskit
+    try:
+        import qiskit
+        dependencies['qiskit'] = True
+    except ImportError:
+        pass
+    
+    # Check PySCF
+    try:
+        import pyscf
+        dependencies['pyscf'] = True
+    except ImportError:
+        pass
+    
+    # Check OpenFermion
+    try:
+        import openfermion
+        dependencies['openfermion'] = True
+    except ImportError:
+        pass
+    
+    return dependencies
 
 def create_antimatter_calculation(
     molecule_data: Union[Dict, MolecularData],
@@ -52,48 +124,53 @@ def create_antimatter_calculation(
             }
         }
     
-    # Create basis sets
-    basis_set = MixedMatterBasis()
-    basis_set.create_for_molecule(
-        [(atom, position) for atom, position in molecule_data.atoms],
-        e_quality=basis_options.get('e_quality', 'standard'),
-        p_quality=basis_options.get('p_quality', 'standard')
-    )
+    # Create basis
+    basis = MixedMatterBasis()
+    if hasattr(basis, f"create_{molecule_data.name.lower()}_basis") and basis_options.get('quality') == molecule_data.name.lower():
+        # Use specialized basis if available
+        getattr(basis, f"create_{molecule_data.name.lower()}_basis")()
+    else:
+        # Use general basis otherwise
+        quality = basis_options.get('quality', 'standard')
+        basis.create_for_molecule(
+            molecule_data.atoms,
+            electron_quality=quality,
+            positron_quality=quality
+        )
     
-    # Create integral engine
-    integral_engine = AntimatterIntegralEngine(
-        use_analytical=calculation_options.get('use_analytical', True),
-        cache_size=calculation_options.get('cache_size', 10000)
-    )
+    # Create integral engine and compute integrals
+    integral_engine = AntimatterIntegralEngine()
+    integrals = integral_engine.compute_all_integrals(molecule_data, basis)
     
     # Create Hamiltonian
-    hamiltonian = AntimatterHamiltonian(
-        molecular_data=molecule_data,
-        basis_set=basis_set,
-        integral_engine=integral_engine,
-        include_annihilation=calculation_options.get('include_annihilation', True),
-        include_relativistic=calculation_options.get('include_relativistic', False)
-    )
+    hamiltonian = AntimatterHamiltonian()
+    hamiltonian.build_hamiltonian(integrals, molecule_data, basis)
     
-    # Build Hamiltonian matrices
-    hamiltonian_matrices = hamiltonian.build_hamiltonian()
+    # Apply relativistic corrections if requested
+    if calculation_options.get('include_relativistic', False):
+        from .specialized.relativistic import RelativisticCorrection
+        rel_correction = RelativisticCorrection(hamiltonian, basis, molecule_data)
+        rel_correction.calculate_relativistic_integrals()
+        hamiltonian = rel_correction.apply_corrections()
     
-    # Create SCF solver
+    # Run SCF calculation
     scf_solver = AntimatterSCF(
-        hamiltonian=hamiltonian_matrices,
-        basis_set=basis_set,
+        hamiltonian=hamiltonian,
+        basis_set=basis,
         molecular_data=molecule_data,
         **calculation_options.get('scf_options', {})
     )
     
-    return {
-        'molecular_data': molecule_data,
-        'basis_set': basis_set,
-        'integral_engine': integral_engine,
-        'hamiltonian': hamiltonian,
-        'hamiltonian_matrices': hamiltonian_matrices,
-        'scf_solver': scf_solver
-    }
+    scf_result = scf_solver.run()
+    
+    # Calculate annihilation rate if requested
+    if calculation_options.get('include_annihilation', False) and molecule_data.n_positrons > 0:
+        from .specialized.annihilation import AnnihilationOperator
+        annihilation_op = AnnihilationOperator(basis, scf_result)
+        annihilation_result = annihilation_op.calculate_annihilation_rate()
+        scf_result.update(annihilation_result)
+    
+    return scf_result
 
 def run_antimatter_calculation(configuration: Dict) -> Dict:
     """

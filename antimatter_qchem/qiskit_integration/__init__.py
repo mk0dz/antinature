@@ -26,7 +26,7 @@ from .antimatter_solver import AntimatterQuantumSolver
 from .vqe_solver import AntimatterVQESolver
 from .ansatze import AntimatterAnsatz
 
-# Make these classes available at the package level
+# Define what should be exposed at package level
 __all__ = [
     'QiskitNatureAdapter',
     'AntimatterCircuits',
