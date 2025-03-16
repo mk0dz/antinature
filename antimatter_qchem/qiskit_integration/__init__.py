@@ -19,17 +19,22 @@ except ImportError:
 
 # Always import the modules, but the classes will raise an error if Qiskit is not available
 from .adapter import QiskitNatureAdapter
-from .circuits import AntimatterCircuits
+from .circuits import AntimatterCircuits, PositroniumCircuit
 from .solver import PositroniumVQESolver
 from .systems import AntimatterQuantumSystems
 from .antimatter_solver import AntimatterQuantumSolver
+from .vqe_solver import AntimatterVQESolver
+from .ansatze import AntimatterAnsatz
 
 # Make these classes available at the package level
 __all__ = [
     'QiskitNatureAdapter',
     'AntimatterCircuits',
+    'PositroniumCircuit',
     'PositroniumVQESolver',
     'AntimatterQuantumSystems',
     'AntimatterQuantumSolver',
+    'AntimatterVQESolver',
+    'AntimatterAnsatz',
     'HAS_QISKIT'
 ]
