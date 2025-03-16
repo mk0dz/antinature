@@ -2,14 +2,16 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
-from antimatter_qchem.core.molecular_data import MolecularData
-from antimatter_qchem.core.basis import MixedMatterBasis
-from antimatter_qchem.core.integral_engine import AntimatterIntegralEngine
-from antimatter_qchem.core.hamiltonian import AntimatterHamiltonian
-from antimatter_qchem.core.scf import AntimatterSCF
+import anttimatter
+from anttimatter.core import MolecularData
+from anttimatter.core.basis import MixedMatterBasis
+from anttimatter.core.integral_engine import AntimatterIntegralEngine
+from anttimatter.core.hamiltonian import AntimatterHamiltonian
+from anttimatter.core.scf import AntimatterSCF
 
-from antimatter_qchem.specialized.relativistic import RelativisticCorrection
-from antimatter_qchem.specialized.annihilation import AnnihilationOperator
+from anttimatter.specialized import PositroniumSCF
+from anttimatter.specialized.relativistic import RelativisticCorrection
+from anttimatter.specialized.annihilation import AnnihilationOperator
 
 
 
@@ -58,6 +60,12 @@ def anti_hydrogen_workflow(basis_quality='extended', include_relativistic=True):
     # 5. Apply relativistic corrections if requested
     if include_relativistic:
         print("Applying relativistic corrections...")
+        # Initialize with empty matrices if they don't exist yet
+        if 'mass_velocity_e' not in matrices:
+            matrices['mass_velocity_e'] = np.zeros((basis.n_electron_basis, basis.n_electron_basis))
+        if 'darwin_e' not in matrices:
+            matrices['darwin_e'] = np.zeros((basis.n_electron_basis, basis.n_electron_basis))
+            
         relativistic = RelativisticCorrection(
             hamiltonian=matrices,
             basis_set=basis,
@@ -197,11 +205,18 @@ def anti_hydrogen_workflow(basis_quality='extended', include_relativistic=True):
     # Build annihilation operator
     ann_matrix = annihilation.build_annihilation_operator()
     
-    # Calculate annihilation rate
-    ann_rate = annihilation.calculate_annihilation_rate()
-    
-    # Calculate annihilation channels if needed
-    channels = annihilation.analyze_annihilation_channels(scf_results)
+    # Check if we have valid matrices for annihilation calculation
+    if (scf_results.get('P_electron') is not None and scf_results.get('P_electron').shape[0] > 0 and
+        scf_results.get('P_positron') is not None and scf_results.get('P_positron').shape[0] > 0):
+        # Calculate annihilation rate
+        ann_rate = annihilation.calculate_annihilation_rate()
+        
+        # Calculate annihilation channels if needed
+        channels = annihilation.analyze_annihilation_channels(scf_results)
+    else:
+        print("Warning: Cannot calculate annihilation rate due to missing or empty density matrices")
+        ann_rate = 0.0
+        channels = {'ratio_2g_3g': 0.0}
     
     # 9. Compile and return results
     print("\nResults summary:")

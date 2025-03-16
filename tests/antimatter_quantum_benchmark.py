@@ -8,10 +8,10 @@ import numpy as np
 # Use the package-level import instead of reaching into submodules
 try:
     # Try importing from the package level first (recommended)
-    from antimatter_qchem.qiskit_integration import AntimatterQuantumSolver
+    from anttimatter.qiskit_integration import AntimatterQuantumSolver
 except ImportError:
     # Fallback to direct import
-    from antimatter_qchem.qiskit_integration.antimatter_solver import AntimatterQuantumSolver
+    from anttimatter.qiskit_integration.antimatter_solver import AntimatterQuantumSolver
 
 def main():
     """Run antimatter quantum simulations and benchmark the results."""

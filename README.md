@@ -1,4 +1,4 @@
-# Antimatter Quantum Chemistry (antimatter-beta)
+# Antimatter Quantum Chemistry (antimatter)
 
 [![Python Version](https://img.shields.io/badge/python-3.8%2B-blue)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
@@ -18,21 +18,21 @@ A high-performance quantum chemistry framework designed specifically for simulat
 ### Basic Installation
 
 ```bash
-pip install antimatter-beta
+pip install antimatter
 ```
 
 ### Installation with Quantum Computing Support
 
 ```bash
-pip install antimatter-beta[qiskit]
+pip install antimatter[qiskit]
 ```
 
 ## Quick Start
 
 ```python
 import numpy as np
-from antimatter_qchem.core.molecular_data import MolecularData
-from antimatter_qchem.utils import create_antimatter_calculation
+from antimatter.core.molecular_data import MolecularData
+from antimatter.utils import create_antimatter_calculation
 
 # Create a positronium system (electron-positron bound state)
 positronium = MolecularData.positronium()
@@ -66,10 +66,10 @@ The package includes several example scripts for common antimatter research scen
 If you use this package in your research, please cite:
 
 ```
-@software{antimatter_qchem,
+@software{antimatter,
   author = {mk0dz},
   title = {Antimatter Quantum Chemistry},
-  url = {https://github.com/mk0dz/antimatter-beta},
+  url = {https://github.com/mk0dz/antimatter},
   version = {0.1.0},
   year = {2023},
 }

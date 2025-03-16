@@ -4,7 +4,7 @@ Quantum Computing Antimatter Simulation Example
 ==============================================
 
 This example demonstrates how to set up and run a quantum computing simulation
-of positronium using the antimatter-beta package with Qiskit integration.
+of positronium using the antimatter package with Qiskit integration.
 """
 
 import numpy as np
@@ -16,16 +16,16 @@ try:
     HAS_QISKIT = True
 except ImportError:
     HAS_QISKIT = False
-    print("Warning: This example requires Qiskit. Install with 'pip install antimatter-beta[qiskit]'")
+    print("Warning: This example requires Qiskit. Install with 'pip install antimatter[qiskit]'")
     import sys
     sys.exit(1)
 
-from antimatter_qchem.core.molecular_data import MolecularData
-from antimatter_qchem.core.basis import MixedMatterBasis
-from antimatter_qchem.core.integral_engine import AntimatterIntegralEngine
-from antimatter_qchem.core.hamiltonian import AntimatterHamiltonian
-from antimatter_qchem.qiskit_integration import AntimatterQuantumSolver, AntimatterQuantumSystems
-from antimatter_qchem.qiskit_integration.ansatze import AntimatterAnsatz
+from anttimatter.core.molecular_data import MolecularData
+from anttimatter.core.basis import MixedMatterBasis
+from anttimatter.core.integral_engine import AntimatterIntegralEngine
+from anttimatter.core.hamiltonian import AntimatterHamiltonian
+from anttimatter.qiskit_integration import AntimatterQuantumSolver, AntimatterQuantumSystems
+from anttimatter.qiskit_integration.ansatze import AntimatterAnsatz
 
 def main():
     print("Quantum Computing Antimatter Simulation Example")

@@ -4,19 +4,19 @@ Anti-Hydrogen Simulation Example
 ================================
 
 This example demonstrates how to set up and run a simulation of anti-hydrogen
-(positron bound to an antiproton) using the antimatter-beta package.
+(positron bound to an antiproton) using the antimatter package.
 """
 
 import numpy as np
 import matplotlib.pyplot as plt
-from antimatter_qchem.core.molecular_data import MolecularData
-from antimatter_qchem.core.basis import MixedMatterBasis
-from antimatter_qchem.core.integral_engine import AntimatterIntegralEngine
-from antimatter_qchem.core.hamiltonian import AntimatterHamiltonian
-from antimatter_qchem.core.scf import AntimatterSCF
-from antimatter_qchem.specialized.annihilation import AnnihilationOperator
-from antimatter_qchem.specialized.relativistic import RelativisticCorrection
-from antimatter_qchem.specialized.visualization import AntimatterVisualizer
+from anttimatter.core.molecular_data import MolecularData
+from anttimatter.core.basis import MixedMatterBasis
+from anttimatter.core.integral_engine import AntimatterIntegralEngine
+from anttimatter.core.hamiltonian import AntimatterHamiltonian
+from anttimatter.core.scf import AntimatterSCF
+from anttimatter.specialized.annihilation import AnnihilationOperator
+from anttimatter.specialized.relativistic import RelativisticCorrection
+from anttimatter.specialized.visualization import AntimatterVisualizer
 
 def main():
     print("Anti-Hydrogen Simulation Example")

@@ -6,13 +6,13 @@ against known analytical solutions.
 """
 
 import numpy as np
-from antimatter_qchem.core.molecular_data import MolecularData
-from antimatter_qchem.core.basis import MixedMatterBasis
-from antimatter_qchem.core.integral_engine import AntimatterIntegralEngine
-from antimatter_qchem.core.hamiltonian import AntimatterHamiltonian
-from antimatter_qchem.core.scf import AntimatterSCF
-from antimatter_qchem.specialized.positronium import PositroniumSCF
-from antimatter_qchem.specialized.annihilation import AnnihilationOperator
+from anttimatter.core.molecular_data import MolecularData
+from anttimatter.core.basis import MixedMatterBasis
+from anttimatter.core.integral_engine import AntimatterIntegralEngine
+from anttimatter.core.hamiltonian import AntimatterHamiltonian
+from anttimatter.core.scf import AntimatterSCF
+from anttimatter.specialized.positronium import PositroniumSCF
+from anttimatter.specialized.annihilation import AnnihilationOperator
 
 def test_positronium_energy():
     """

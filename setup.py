@@ -4,7 +4,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setup(
-    name="antimatter-beta",
+    name="anttimatter",
     version="0.1.0",
     packages=find_packages(),
     install_requires=[
@@ -31,10 +31,10 @@ setup(
     description="Quantum chemistry package for antimatter simulations",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/mk0dz/antimatter-beta",
+    url="https://github.com/mk0dz/anttimatter",
     project_urls={
-        "Bug Tracker": "https://github.com/mk0dz/antimatter-beta/issues",
-        "Documentation": "https://github.com/mk0dz/antimatter-beta",
+        "Bug Tracker": "https://github.com/mk0dz/anttimatter/issues",
+        "Documentation": "https://github.com/mk0dz/anttimatter",
     },
     classifiers=[
         "Programming Language :: Python :: 3",
