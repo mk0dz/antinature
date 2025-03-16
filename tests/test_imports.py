@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
 """
-Simple script to verify imports from qantimatter package
+Simple script to verify imports from quantimatter package
 """
 
 import sys
 
 try:
     # Basic imports
-    import qantimatter
-    from qantimatter.core.molecular_data import MolecularData
-    from qantimatter.core.basis import MixedMatterBasis
+    import quantimatter
+    from quantimatter.core.molecular_data import MolecularData
+    from quantimatter.core.basis import MixedMatterBasis
     
     print("✅ Imports working correctly!")
-    print(f"Package version: {antimatter.__version__}")
+    print(f"Package version: {quantimatter.__version__}")
     
     # Create a simple positronium system
     pos = MolecularData.positronium()

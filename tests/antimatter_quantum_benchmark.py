@@ -1,4 +1,4 @@
-# examples/antimatter_quantum_benchmark.py
+# examples/quantimatter_quantum_benchmark.py
 
 import os
 import time
@@ -8,14 +8,14 @@ import numpy as np
 # Use the package-level import instead of reaching into submodules
 try:
     # Try importing from the package level first (recommended)
-    from qantimatter.qiskit_integration import AntimatterQuantumSolver
+    from quantimatter.qiskit_integration import quantimatterQuantumSolver
 except ImportError:
     # Fallback to direct import
-    from qantimatter.qiskit_integration.qantimatter_solver import AntimatterQuantumSolver
+    from quantimatter.qiskit_integration.quantimatter_solver import quantimatterQuantumSolver
 
 def main():
-    """Run antimatter quantum simulations and benchmark the results."""
-    print("=== Antimatter Quantum Systems Benchmark ===\n")
+    """Run quantimatter quantum simulations and benchmark the results."""
+    print("=== quantimatter Quantum Systems Benchmark ===\n")
     
     # Systems to benchmark
     systems = [
@@ -32,7 +32,7 @@ def main():
     energy_results = {}
     
     # Create solver with optimized settings
-    solver = AntimatterQuantumSolver(
+    solver = quantimatterQuantumSolver(
         use_exact_solver=False,  # Use VQE by default
         optimizer_name='COBYLA',
         max_iterations=300,

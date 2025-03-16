@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-Quantum Integration Test for antimatter
+Quantum Integration Test for quantimatter
 ===========================================
 
-This script tests the quantum functionality of the antimatter package
+This script tests the quantum functionality of the quantimatter package
 by importing Qiskit integration modules and running a basic quantum simulation.
 """
 
@@ -12,19 +12,19 @@ import numpy as np
 
 try:
     # First import the core modules
-    from qantimatter.core.molecular_data import MolecularData
-    from qantimatter.core.basis import MixedMatterBasis
+    from quantimatter.core.molecular_data import MolecularData
+    from quantimatter.core.basis import MixedMatterBasis
     
     # Now try to import Qiskit integration modules
-    from qantimatter.qiskit_integration import (
-        AntimatterQuantumSolver,
-        AntimatterQuantumSystems,
-        AntimatterVQESolver,
-        AntimatterCircuits
+    from quantimatter.qiskit_integration import (
+        quantimatterQuantumSolver,
+        quantimatterQuantumSystems,
+        quantimatterVQESolver,
+        quantimatterCircuits
     )
-    from qantimatter.qiskit_integration.adapter import QiskitNatureAdapter
+    from quantimatter.qiskit_integration.adapter import QiskitNatureAdapter
     
-    print("✅ Successfully imported antimatter package including Qiskit integration")
+    print("✅ Successfully imported quantimatter package including Qiskit integration")
     
     # Create a simple positronium system
     print("\nCreating a positronium system...")
@@ -33,21 +33,21 @@ try:
     
     # Create a quantum solver
     print("\nInitializing quantum solver...")
-    quantum_solver = AntimatterQuantumSolver()
+    quantum_solver = quantimatterQuantumSolver()
     print(f"✅ Created quantum solver: {quantum_solver}")
     
     # Create a minimal VQE solver with correct parameters
     print("\nSetting up VQE solver...")
-    vqe_solver = AntimatterVQESolver(
+    vqe_solver = quantimatterVQESolver(
         optimizer_name='COBYLA',
         max_iterations=10,  # Minimal iterations for testing
         shots=100  # Small number of shots for quick testing
     )
     print(f"✅ Created VQE solver: {vqe_solver}")
     
-    # Create quantum circuits using AntimatterCircuits
+    # Create quantum circuits using quantimatterCircuits
     print("\nCreating quantum circuits...")
-    circuits = AntimatterCircuits(n_electron_orbitals=1, n_positron_orbitals=1)
+    circuits = quantimatterCircuits(n_electron_orbitals=1, n_positron_orbitals=1)
     
     # Create custom ansatz circuit
     custom_circuit = circuits.create_custom_ansatz(reps=1)
@@ -59,7 +59,7 @@ try:
     
     # Create quantum systems
     print("\nCreating quantum systems...")
-    quantum_sys = AntimatterQuantumSystems()
+    quantum_sys = quantimatterQuantumSystems()
     
     try:
         # Use positronium method to create a positronium system
@@ -80,11 +80,11 @@ try:
         print(f"⚠️ Skipping full VQE simulation: {e}")
         print("This is expected if some advanced Qiskit components are missing")
     
-    print("\n🎉 QUANTUM TEST SUCCESSFUL: antimatter package with Qiskit integration is working! 🎉")
+    print("\n🎉 QUANTUM TEST SUCCESSFUL: quantimatter package with Qiskit integration is working! 🎉")
     
 except ImportError as e:
     print(f"❌ ERROR: Failed to import Qiskit integration modules: {e}")
-    print("Make sure you installed the Qiskit extras with: pip install 'antimatter[qiskit]'")
+    print("Make sure you installed the Qiskit extras with: pip install 'quantimatter[qiskit]'")
     sys.exit(1)
 except Exception as e:
     print(f"❌ ERROR: An error occurred during the quantum test: {e}")

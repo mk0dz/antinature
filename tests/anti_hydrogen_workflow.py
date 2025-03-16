@@ -2,16 +2,16 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
-import qantimatter
-from qantimatter.core import MolecularData
-from qantimatter.core.basis import MixedMatterBasis
-from qantimatter.core.integral_engine import AntimatterIntegralEngine
-from qantimatter.core.hamiltonian import AntimatterHamiltonian
-from qantimatter.core.scf import AntimatterSCF
+import quantimatter
+from quantimatter.core import MolecularData
+from quantimatter.core.basis import MixedMatterBasis
+from quantimatter.core.integral_engine import quantimatterIntegralEngine
+from quantimatter.core.hamiltonian import quantimatterHamiltonian
+from quantimatter.core.scf import quantimatterSCF
 
-from qantimatter.specialized import PositroniumSCF
-from qantimatter.specialized.relativistic import RelativisticCorrection
-from qantimatter.specialized.annihilation import AnnihilationOperator
+from quantimatter.specialized import PositroniumSCF
+from quantimatter.specialized.relativistic import RelativisticCorrection
+from quantimatter.specialized.annihilation import AnnihilationOperator
 
 
 
@@ -45,11 +45,11 @@ def anti_hydrogen_workflow(basis_quality='extended', include_relativistic=True):
     print(f"Basis sets created: {basis.n_electron_basis} electron, {basis.n_positron_basis} positron functions")
     
     # 3. Create integral engine
-    integral_engine = AntimatterIntegralEngine()
+    integral_engine = quantimatterIntegralEngine()
     
     # 4. Create Hamiltonian
     print("Building Hamiltonian...")
-    hamiltonian = AntimatterHamiltonian(
+    hamiltonian = quantimatterHamiltonian(
         molecular_data=anti_h,
         basis_set=basis,
         integral_engine=integral_engine,
@@ -76,7 +76,7 @@ def anti_hydrogen_workflow(basis_quality='extended', include_relativistic=True):
     
     # 6. Run SCF calculation
     print("Running SCF calculation...")
-    scf = AntimatterSCF(
+    scf = quantimatterSCF(
         hamiltonian=matrices,
         basis_set=basis,
         molecular_data=anti_h
