@@ -4,18 +4,18 @@ Positronium Simulation Example
 ==============================
 
 This example demonstrates how to set up and run a basic positronium 
-(electron-positron bound state) simulation using the anttimatter package.
+(electron-positron bound state) simulation using the antimatter package.
 """
 
 import numpy as np
 import matplotlib.pyplot as plt
-from anttimatter.core.molecular_data import MolecularData
-from anttimatter.core.basis import MixedMatterBasis
-from anttimatter.core.integral_engine import AntimatterIntegralEngine
-from anttimatter.core.hamiltonian import AntimatterHamiltonian
-from anttimatter.specialized.positronium import PositroniumSCF
-from anttimatter.specialized.annihilation import AnnihilationOperator
-from anttimatter.specialized.visualization import AntimatterVisualizer
+from antimatter.core.molecular_data import MolecularData
+from antimatter.core.basis import MixedMatterBasis
+from antimatter.core.integral_engine import AntimatterIntegralEngine
+from antimatter.core.hamiltonian import AntimatterHamiltonian
+from antimatter.specialized.positronium import PositroniumSCF
+from antimatter.specialized.annihilation import AnnihilationOperator
+from antimatter.specialized.visualization import AntimatterVisualizer
 
 def main():
     print("Positronium Simulation Example")

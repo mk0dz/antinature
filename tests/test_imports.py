@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
 """
-Simple script to verify imports from anttimatter package
+Simple script to verify imports from antimatter package
 """
 
 import sys
 
 try:
     # Basic imports
-    import anttimatter
-    from anttimatter.core.molecular_data import MolecularData
-    from anttimatter.core.basis import MixedMatterBasis
+    import antimatter
+    from antimatter.core.molecular_data import MolecularData
+    from antimatter.core.basis import MixedMatterBasis
     
     print("✅ Imports working correctly!")
-    print(f"Package version: {anttimatter.__version__}")
+    print(f"Package version: {antimatter.__version__}")
     
     # Create a simple positronium system
     pos = MolecularData.positronium()

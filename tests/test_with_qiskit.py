@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-Quantum Integration Test for Anttimatter
+Quantum Integration Test for antimatter
 ===========================================
 
-This script tests the quantum functionality of the anttimatter package
+This script tests the quantum functionality of the antimatter package
 by importing Qiskit integration modules and running a basic quantum simulation.
 """
 
@@ -12,19 +12,19 @@ import numpy as np
 
 try:
     # First import the core modules
-    from anttimatter.core.molecular_data import MolecularData
-    from anttimatter.core.basis import MixedMatterBasis
+    from antimatter.core.molecular_data import MolecularData
+    from antimatter.core.basis import MixedMatterBasis
     
     # Now try to import Qiskit integration modules
-    from anttimatter.qiskit_integration import (
+    from antimatter.qiskit_integration import (
         AntimatterQuantumSolver,
         AntimatterQuantumSystems,
         AntimatterVQESolver,
         AntimatterCircuits
     )
-    from anttimatter.qiskit_integration.adapter import QiskitNatureAdapter
+    from antimatter.qiskit_integration.adapter import QiskitNatureAdapter
     
-    print("✅ Successfully imported anttimatter package including Qiskit integration")
+    print("✅ Successfully imported antimatter package including Qiskit integration")
     
     # Create a simple positronium system
     print("\nCreating a positronium system...")
@@ -80,11 +80,11 @@ try:
         print(f"⚠️ Skipping full VQE simulation: {e}")
         print("This is expected if some advanced Qiskit components are missing")
     
-    print("\n🎉 QUANTUM TEST SUCCESSFUL: anttimatter package with Qiskit integration is working! 🎉")
+    print("\n🎉 QUANTUM TEST SUCCESSFUL: antimatter package with Qiskit integration is working! 🎉")
     
 except ImportError as e:
     print(f"❌ ERROR: Failed to import Qiskit integration modules: {e}")
-    print("Make sure you installed the Qiskit extras with: pip install 'anttimatter[qiskit]'")
+    print("Make sure you installed the Qiskit extras with: pip install 'antimatter[qiskit]'")
     sys.exit(1)
 except Exception as e:
     print(f"❌ ERROR: An error occurred during the quantum test: {e}")
