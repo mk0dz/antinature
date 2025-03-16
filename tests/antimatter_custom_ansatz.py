@@ -1,19 +1,19 @@
-# examples/quantimatter_custom_ansatz.py
+# examples/antiverse_custom_ansatz.py
 
 import numpy as np
 import matplotlib.pyplot as plt
-from quantimatter.qiskit_integration import quantimatterVQESolver
-from quantimatter.qiskit_integration import quantimatterQuantumSystems
+from antiverse.qiskit_integration import antiverseVQESolver
+from antiverse.qiskit_integration import antiverseQuantumSystems
 
 def main():
-    """Test specialized quantimatter ansätze."""
-    print("=== Testing Specialized quantimatter Ansätze ===")
+    """Test specialized antiverse ansätze."""
+    print("=== Testing Specialized antiverse Ansätze ===")
     
     # Create systems handler
-    systems = quantimatterQuantumSystems()
+    systems = antiverseQuantumSystems()
     
     # Create solver
-    solver = quantimatterVQESolver(
+    solver = antiverseVQESolver(
         optimizer_name='L_BFGS_B',  # Using L-BFGS-B for better convergence
         max_iterations=300,
         shots=2048
@@ -83,14 +83,14 @@ def main():
     plt.plot(x, theoretical_values, 'ro-', label='Theoretical')
     
     # Add labels and legend
-    plt.xlabel('quantimatter System')
+    plt.xlabel('antiverse System')
     plt.ylabel('Energy (Hartree)')
-    plt.title('Comparison of quantimatter Ansätze')
+    plt.title('Comparison of antiverse Ansätze')
     plt.xticks(x, system_names)
     plt.legend()
     
     plt.tight_layout()
-    plt.savefig('quantimatter_ansatz_comparison.png')
+    plt.savefig('antiverse_ansatz_comparison.png')
     
     print("\nResults saved and visualization created.")
     return results

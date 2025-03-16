@@ -1,4 +1,4 @@
-# quantimatter/specialized/relativistic.py
+# antiverse/specialized/relativistic.py
 
 import numpy as np
 from typing import List, Tuple, Dict, Optional
@@ -7,7 +7,7 @@ import time
 
 class RelativisticCorrection:
     """
-    Optimized relativistic corrections for quantimatter systems.
+    Optimized relativistic corrections for antiverse systems.
     """
     
     def __init__(self, 

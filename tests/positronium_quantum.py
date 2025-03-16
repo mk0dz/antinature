@@ -2,10 +2,10 @@
 
 try:
     # Try importing from the package first (recommended)
-    from quantimatter.qiskit_integration import PositroniumVQESolver
+    from antiverse.qiskit_integration import PositroniumVQESolver
 except ImportError:
     # Fallback to direct import
-    from quantimatter.qiskit_integration.solver import PositroniumVQESolver
+    from antiverse.qiskit_integration.solver import PositroniumVQESolver
 
 def main():
     """Run positronium quantum calculation example."""

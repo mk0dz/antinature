@@ -4,18 +4,18 @@ Positronium Simulation Example
 ==============================
 
 This example demonstrates how to set up and run a basic positronium 
-(electron-positron bound state) simulation using the quantimatter package.
+(electron-positron bound state) simulation using the antiverse package.
 """
 
 import numpy as np
 import matplotlib.pyplot as plt
-from quantimatter.core.molecular_data import MolecularData
-from quantimatter.core.basis import MixedMatterBasis
-from quantimatter.core.integral_engine import quantimatterIntegralEngine
-from quantimatter.core.hamiltonian import quantimatterHamiltonian
-from quantimatter.specialized.positronium import PositroniumSCF
-from quantimatter.specialized.annihilation import AnnihilationOperator
-from quantimatter.specialized.visualization import quantimatterVisualizer
+from antiverse.core.molecular_data import MolecularData
+from antiverse.core.basis import MixedMatterBasis
+from antiverse.core.integral_engine import antiverseIntegralEngine
+from antiverse.core.hamiltonian import antiverseHamiltonian
+from antiverse.specialized.positronium import PositroniumSCF
+from antiverse.specialized.annihilation import AnnihilationOperator
+from antiverse.specialized.visualization import antiverseVisualizer
 
 def main():
     print("Positronium Simulation Example")
@@ -34,11 +34,11 @@ def main():
     
     # Step 3: Set up integral engine
     print("\nInitializing integral engine...")
-    integral_engine = quantimatterIntegralEngine()
+    integral_engine = antiverseIntegralEngine()
     
     # Step 4: Create Hamiltonian
     print("\nConstructing Hamiltonian...")
-    hamiltonian = quantimatterHamiltonian(
+    hamiltonian = antiverseHamiltonian(
         molecular_data=positronium,
         basis_set=basis,
         integral_engine=integral_engine,
@@ -76,7 +76,7 @@ def main():
     
     # Step 7: Visualize results
     print("\nGenerating visualizations...")
-    visualizer = quantimatterVisualizer()
+    visualizer = antiverseVisualizer()
     fig = visualizer.plot_positronium_density(positronium, basis, scf_result)
     plt.savefig("positronium_density.png")
     print("Visualization saved to 'positronium_density.png'")

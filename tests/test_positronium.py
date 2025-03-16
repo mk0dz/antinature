@@ -6,13 +6,13 @@ against known analytical solutions.
 """
 
 import numpy as np
-from quantimatter.core.molecular_data import MolecularData
-from quantimatter.core.basis import MixedMatterBasis
-from quantimatter.core.integral_engine import quantimatterIntegralEngine
-from quantimatter.core.hamiltonian import quantimatterHamiltonian
-from quantimatter.core.scf import quantimatterSCF
-from quantimatter.specialized.positronium import PositroniumSCF
-from quantimatter.specialized.annihilation import AnnihilationOperator
+from antiverse.core.molecular_data import MolecularData
+from antiverse.core.basis import MixedMatterBasis
+from antiverse.core.integral_engine import antiverseIntegralEngine
+from antiverse.core.hamiltonian import antiverseHamiltonian
+from antiverse.core.scf import antiverseSCF
+from antiverse.specialized.positronium import PositroniumSCF
+from antiverse.specialized.annihilation import AnnihilationOperator
 
 def test_positronium_energy():
     """
@@ -49,10 +49,10 @@ def test_positronium_energy():
         print(f"Basis set size: {basis.n_electron_basis} electron, {basis.n_positron_basis} positron")
         
         # Create integral engine
-        integral_engine = quantimatterIntegralEngine()
+        integral_engine = antiverseIntegralEngine()
         
         # Create Hamiltonian
-        hamiltonian = quantimatterHamiltonian(
+        hamiltonian = antiverseHamiltonian(
             molecular_data=positronium,
             basis_set=basis,
             integral_engine=integral_engine,
@@ -63,7 +63,7 @@ def test_positronium_energy():
         matrices = hamiltonian.build_hamiltonian()
         
         # Run SCF with regular solver
-        scf_standard = quantimatterSCF(
+        scf_standard = antiverseSCF(
             hamiltonian=matrices,
             basis_set=basis,
             molecular_data=positronium
@@ -169,10 +169,10 @@ def test_positronium_lifetime():
         basis.create_for_molecule(positronium.atoms, 'extended', 'extended')
     
     # Create integral engine
-    integral_engine = quantimatterIntegralEngine()
+    integral_engine = antiverseIntegralEngine()
     
     # Create Hamiltonian
-    hamiltonian = quantimatterHamiltonian(
+    hamiltonian = antiverseHamiltonian(
         molecular_data=positronium,
         basis_set=basis,
         integral_engine=integral_engine,
@@ -191,7 +191,7 @@ def test_positronium_lifetime():
         )
         has_specialized = True
     except (ImportError, NameError):
-        scf = quantimatterSCF(
+        scf = antiverseSCF(
             hamiltonian=matrices,
             basis_set=basis,
             molecular_data=positronium

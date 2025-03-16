@@ -1,4 +1,4 @@
-# quantimatter/qiskit_integration/quantimatter_solver.py
+# antiverse/qiskit_integration/antiverse_solver.py
 
 import numpy as np
 from typing import Dict, List, Optional, Union, Tuple, Any
@@ -14,14 +14,14 @@ except ImportError:
     print("Warning: Qiskit Algorithms not available. Limited functionality.")
 
 # Import our quantum systems with relative import
-from .systems import quantimatterQuantumSystems
-from .vqe_solver import quantimatterVQESolver
+from .systems import antiverseQuantumSystems
+from .vqe_solver import antiverseVQESolver
 
-class quantimatterQuantumSolver:
+class antiverseQuantumSolver:
     """
-    Quantum solver for quantimatter systems using Qiskit.
+    Quantum solver for antiverse systems using Qiskit.
     
-    This class serves as the main interface for solving quantimatter systems
+    This class serves as the main interface for solving antiverse systems
     using quantum computing approaches, supporting VQE and exact solvers.
     """
     
@@ -32,7 +32,7 @@ class quantimatterQuantumSolver:
                 shots: int = 2048,
                 mapper_type: str = 'jordan_wigner'):
         """
-        Initialize the quantimatter quantum solver.
+        Initialize the antiverse quantum solver.
         
         Parameters:
         -----------
@@ -57,11 +57,11 @@ class quantimatterQuantumSolver:
         self.mapper_type = mapper_type
         
         # Initialize the quantum systems object
-        self.systems = quantimatterQuantumSystems(mapper_type=mapper_type)
+        self.systems = antiverseQuantumSystems(mapper_type=mapper_type)
         
         # Initialize VQE solver if needed
         if not use_exact_solver:
-            self.vqe_solver = quantimatterVQESolver(
+            self.vqe_solver = antiverseVQESolver(
                 optimizer_name=optimizer_name,
                 max_iterations=max_iterations,
                 shots=shots
@@ -257,7 +257,7 @@ class quantimatterQuantumSolver:
                            reps: int = 3,
                            apply_correction: bool = False) -> Dict:
         """
-        Solve a custom quantimatter system with user-provided Hamiltonian.
+        Solve a custom antiverse system with user-provided Hamiltonian.
         
         Parameters:
         -----------
@@ -318,7 +318,7 @@ class quantimatterQuantumSolver:
                        ansatz_types: List[str] = ['specialized', 'hardware_efficient'],
                        exact: bool = True) -> Dict[str, Dict]:
         """
-        Compare different solution methods for a given quantimatter system.
+        Compare different solution methods for a given antiverse system.
         
         Parameters:
         -----------

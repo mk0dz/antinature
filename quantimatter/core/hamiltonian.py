@@ -1,9 +1,9 @@
 import numpy as np
 from typing import List, Tuple, Dict, Optional, Union
 
-class quantimatterHamiltonian:
+class antiverseHamiltonian:
     """
-    Optimized Hamiltonian for quantimatter molecular systems.
+    Optimized Hamiltonian for antiverse molecular systems.
     """
     
     def __init__(self, 
@@ -13,7 +13,7 @@ class quantimatterHamiltonian:
                  include_annihilation: bool = True,
                  include_relativistic: bool = False):
         """
-        Initialize an quantimatter Hamiltonian.
+        Initialize an antiverse Hamiltonian.
         
         Parameters:
         -----------
@@ -21,7 +21,7 @@ class quantimatterHamiltonian:
             Molecular structure information
         basis_set : MixedMatterBasis
             Basis set for the calculation
-        integral_engine : quantimatterIntegralEngine
+        integral_engine : antiverseIntegralEngine
             Engine for integral computation
         include_annihilation : bool
             Whether to include annihilation terms
@@ -371,7 +371,7 @@ class quantimatterHamiltonian:
     
     def build_hamiltonian(self):
         """
-        Construct the complete Hamiltonian for the quantimatter system.
+        Construct the complete Hamiltonian for the antiverse system.
         """
         # 1. Build overlap matrix
         S = self.build_overlap_matrix()

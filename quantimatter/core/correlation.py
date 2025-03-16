@@ -2,9 +2,9 @@ import numpy as np
 from typing import List, Tuple, Dict, Optional
 from scipy.linalg import eigh, inv, sqrtm
 
-class quantimatterCorrelation:
+class antiverseCorrelation:
     """
-    Post-SCF correlation methods for quantimatter systems.
+    Post-SCF correlation methods for antiverse systems.
     """
     def __init__(self, scf_result: Dict, hamiltonian: Dict, basis: 'MixedMatterBasis'):
         """
@@ -213,7 +213,7 @@ class quantimatterCorrelation:
     
     def coupled_cluster(self, level='CCSD'):
         """
-        Perform coupled-cluster calculation for the quantimatter system.
+        Perform coupled-cluster calculation for the antiverse system.
         
         Parameters:
         -----------

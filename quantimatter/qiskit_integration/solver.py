@@ -1,4 +1,4 @@
-# quantimatter/qiskit_integration/solver.py
+# antiverse/qiskit_integration/solver.py
 
 import numpy as np
 from typing import Dict, List, Optional, Any, Tuple

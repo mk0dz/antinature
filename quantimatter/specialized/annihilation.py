@@ -1,4 +1,4 @@
-# quantimatter/specialized/annihilation.py
+# antiverse/specialized/annihilation.py
 
 import numpy as np
 from typing import List, Tuple, Dict, Optional

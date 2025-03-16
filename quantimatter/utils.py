@@ -1,5 +1,5 @@
 """
-Utility functions for quantimatter quantum chemistry calculations.
+Utility functions for antiverse quantum chemistry calculations.
 """
 
 import numpy as np
@@ -10,10 +10,10 @@ import warnings
 # Import project modules
 from .core.molecular_data import MolecularData
 from .core.basis import MixedMatterBasis
-from .core.integral_engine import quantimatterIntegralEngine
-from .core.hamiltonian import quantimatterHamiltonian
-from .core.scf import quantimatterSCF
-from .core.correlation import quantimatterCorrelation
+from .core.integral_engine import antiverseIntegralEngine
+from .core.hamiltonian import antiverseHamiltonian
+from .core.scf import antiverseSCF
+from .core.correlation import antiverseCorrelation
 
 def check_dependencies(dependencies: Dict[str, str]) -> Tuple[bool, List[str]]:
     """
@@ -83,13 +83,13 @@ def check_optional_dependencies() -> Dict[str, bool]:
     
     return dependencies
 
-def create_quantimatter_calculation(
+def create_antiverse_calculation(
     molecule_data: Union[Dict, MolecularData],
     basis_options: Optional[Dict] = None,
     calculation_options: Optional[Dict] = None
 ) -> Dict:
     """
-    Create a complete quantimatter calculation workflow.
+    Create a complete antiverse calculation workflow.
     
     Parameters:
     -----------
@@ -139,11 +139,11 @@ def create_quantimatter_calculation(
         )
     
     # Create integral engine and compute integrals
-    integral_engine = quantimatterIntegralEngine()
+    integral_engine = antiverseIntegralEngine()
     integrals = integral_engine.compute_all_integrals(molecule_data, basis)
     
     # Create Hamiltonian
-    hamiltonian = quantimatterHamiltonian()
+    hamiltonian = antiverseHamiltonian()
     hamiltonian.build_hamiltonian(integrals, molecule_data, basis)
     
     # Apply relativistic corrections if requested
@@ -154,7 +154,7 @@ def create_quantimatter_calculation(
         hamiltonian = rel_correction.apply_corrections()
     
     # Run SCF calculation
-    scf_solver = quantimatterSCF(
+    scf_solver = antiverseSCF(
         hamiltonian=hamiltonian,
         basis_set=basis,
         molecular_data=molecule_data,
@@ -172,14 +172,14 @@ def create_quantimatter_calculation(
     
     return scf_result
 
-def run_quantimatter_calculation(configuration: Dict) -> Dict:
+def run_antiverse_calculation(configuration: Dict) -> Dict:
     """
-    Run a complete quantimatter calculation using the provided configuration.
+    Run a complete antiverse calculation using the provided configuration.
     
     Parameters:
     -----------
     configuration : Dict
-        Configuration from create_quantimatter_calculation
+        Configuration from create_antiverse_calculation
         
     Returns:
     --------
@@ -196,7 +196,7 @@ def run_quantimatter_calculation(configuration: Dict) -> Dict:
     post_scf_results = {}
     
     if configuration.get('run_mp2', False):
-        correlation = quantimatterCorrelation(
+        correlation = antiverseCorrelation(
             scf_result=scf_results,
             hamiltonian=configuration['hamiltonian_matrices'],
             basis=configuration['basis_set']

@@ -3,12 +3,12 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from quantimatter.core.molecular_data import MolecularData
-from quantimatter.core.basis import GaussianBasisFunction, BasisSet, PositronBasis, MixedMatterBasis
-from quantimatter.core.integral_engine import quantimatterIntegralEngine
-from quantimatter.core.hamiltonian import quantimatterHamiltonian
-from quantimatter.core.scf import quantimatterSCF
-from quantimatter.core.correlation import quantimatterCorrelation
+from antiverse.core.molecular_data import MolecularData
+from antiverse.core.basis import GaussianBasisFunction, BasisSet, PositronBasis, MixedMatterBasis
+from antiverse.core.integral_engine import antiverseIntegralEngine
+from antiverse.core.hamiltonian import antiverseHamiltonian
+from antiverse.core.scf import antiverseSCF
+from antiverse.core.correlation import antiverseCorrelation
 
 def test_molecular_data():
     print("\n=== Testing MolecularData ===")
@@ -98,7 +98,7 @@ def test_integral_engine():
     print("\n=== Testing Integral Engine ===")
     
     # Create integral engine
-    integral_engine = quantimatterIntegralEngine(use_analytical=True, cache_size=1000)
+    integral_engine = antiverseIntegralEngine(use_analytical=True, cache_size=1000)
     
     # Get basis functions
     center1 = np.array([0.0, 0.0, 0.0])
@@ -131,7 +131,7 @@ def test_hamiltonian():
     integral_engine = test_integral_engine()
     
     # Create Hamiltonian
-    hamiltonian = quantimatterHamiltonian(
+    hamiltonian = antiverseHamiltonian(
         molecular_data=water,
         basis_set=mixed_basis,
         integral_engine=integral_engine,
@@ -185,10 +185,10 @@ def test_scf():
     mixed_basis.create_for_molecule(h2.atoms, 'standard', 'standard')
     
     # Create integral engine
-    integral_engine = quantimatterIntegralEngine(use_analytical=True, cache_size=1000)
+    integral_engine = antiverseIntegralEngine(use_analytical=True, cache_size=1000)
     
     # Create Hamiltonian
-    hamiltonian = quantimatterHamiltonian(
+    hamiltonian = antiverseHamiltonian(
         molecular_data=h2,
         basis_set=mixed_basis,
         integral_engine=integral_engine,
@@ -206,7 +206,7 @@ def test_scf():
         return
     
     # Create SCF solver
-    scf = quantimatterSCF(
+    scf = antiverseSCF(
         hamiltonian=matrices,
         basis_set=mixed_basis,
         molecular_data=h2,

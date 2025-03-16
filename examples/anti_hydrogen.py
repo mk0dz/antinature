@@ -4,19 +4,19 @@ Anti-Hydrogen Simulation Example
 ================================
 
 This example demonstrates how to set up and run a simulation of anti-hydrogen
-(positron bound to an antiproton) using the quantimatter package.
+(positron bound to an antiproton) using the antiverse package.
 """
 
 import numpy as np
 import matplotlib.pyplot as plt
-from quantimatter.core.molecular_data import MolecularData
-from quantimatter.core.basis import MixedMatterBasis
-from quantimatter.core.integral_engine import quantimatterIntegralEngine
-from quantimatter.core.hamiltonian import quantimatterHamiltonian
-from quantimatter.core.scf import quantimatterSCF
-from quantimatter.specialized.annihilation import AnnihilationOperator
-from quantimatter.specialized.relativistic import RelativisticCorrection
-from quantimatter.specialized.visualization import quantimatterVisualizer
+from antiverse.core.molecular_data import MolecularData
+from antiverse.core.basis import MixedMatterBasis
+from antiverse.core.integral_engine import antiverseIntegralEngine
+from antiverse.core.hamiltonian import antiverseHamiltonian
+from antiverse.core.scf import antiverseSCF
+from antiverse.specialized.annihilation import AnnihilationOperator
+from antiverse.specialized.relativistic import RelativisticCorrection
+from antiverse.specialized.visualization import antiverseVisualizer
 
 def main():
     print("Anti-Hydrogen Simulation Example")
@@ -54,13 +54,13 @@ def main():
     
     # Step 3: Compute integrals
     print("\nComputing integrals...")
-    integral_engine = quantimatterIntegralEngine()
+    integral_engine = antiverseIntegralEngine()
     integrals = integral_engine.compute_all_integrals(antihydrogen, basis)
     print("Integrals computed successfully")
     
     # Step 4: Build Hamiltonian
     print("\nBuilding Hamiltonian...")
-    hamiltonian = quantimatterHamiltonian()
+    hamiltonian = antiverseHamiltonian()
     hamiltonian.build_hamiltonian(integrals, antihydrogen, basis)
     print("Hamiltonian constructed")
     
@@ -73,7 +73,7 @@ def main():
     
     # Step 6: Run SCF calculation
     print("\nPerforming SCF calculation...")
-    scf_solver = quantimatterSCF(
+    scf_solver = antiverseSCF(
         hamiltonian=hamiltonian_rel,
         basis_set=basis,
         molecular_data=antihydrogen,
@@ -100,7 +100,7 @@ def main():
     
     # Step 8: Visualize results
     print("\nGenerating visualizations...")
-    visualizer = quantimatterVisualizer()
+    visualizer = antiverseVisualizer()
     fig = visualizer.plot_positron_density(antihydrogen, basis, scf_result)
     plt.savefig("anti_hydrogen_density.png")
     print("Density plot saved to 'anti_hydrogen_density.png'")

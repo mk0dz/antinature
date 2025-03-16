@@ -1,4 +1,4 @@
-# quantimatter/qiskit_integration/systems.py
+# antiverse/qiskit_integration/systems.py
 
 import numpy as np
 from typing import Dict, List, Optional, Tuple, Union, Any
@@ -18,18 +18,18 @@ except ImportError:
     HAS_QISKIT = False
     print("Warning: Qiskit Nature not available. Using placeholder implementations.")
 
-class quantimatterQuantumSystems:
+class antiverseQuantumSystems:
     """
-    Implements various quantimatter systems for quantum computation.
+    Implements various antiverse systems for quantum computation.
     
     This class provides methods to create Hamiltonians and quantum 
-    circuits for various quantimatter systems including positronium,
+    circuits for various antiverse systems including positronium,
     anti-hydrogen, positronium molecule, and anti-helium.
     """
     
     def __init__(self, mapper_type: str = 'jordan_wigner'):
         """
-        Initialize the quantimatter quantum systems.
+        Initialize the antiverse quantum systems.
         
         Parameters:
         -----------
@@ -418,14 +418,14 @@ class quantimatterQuantumSystems:
         
         return circuit
     
-    def custom_quantimatter_system(self, 
+    def custom_antiverse_system(self, 
                                one_body: np.ndarray, 
                                two_body: np.ndarray) -> Tuple[Any, QuantumCircuit]:
         """
-        Create a Hamiltonian and circuit for a custom quantimatter system.
+        Create a Hamiltonian and circuit for a custom antiverse system.
         
         This allows users to define their own one-body and two-body
-        integrals for custom quantimatter systems.
+        integrals for custom antiverse systems.
         
         Parameters:
         -----------

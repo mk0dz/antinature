@@ -1,7 +1,7 @@
 """
-Core components for quantimatter quantum chemistry.
+Core components for antiverse quantum chemistry.
 
-This module includes the fundamental building blocks for quantimatter chemistry simulations:
+This module includes the fundamental building blocks for antiverse chemistry simulations:
 - Basis sets for electrons and positrons
 - Molecular data structures
 - Hamiltonian construction
@@ -24,8 +24,8 @@ from .basis import (
 
 # Import core computational components
 from .molecular_data import MolecularData
-from .hamiltonian import quantimatterHamiltonian
-from .scf import quantimatterSCF
-from .correlation import quantimatterCorrelation
-from .integral_engine import quantimatterIntegralEngine
+from .hamiltonian import antiverseHamiltonian
+from .scf import antiverseSCF
+from .correlation import antiverseCorrelation
+from .integral_engine import antiverseIntegralEngine
 # Add imports for other modules when they're created

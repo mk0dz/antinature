@@ -3,9 +3,9 @@ from typing import List, Tuple, Dict, Optional
 from scipy.linalg import eigh, inv, sqrtm
 import time
 
-class quantimatterSCF:
+class antiverseSCF:
     """
-    Optimized Self-Consistent Field solver for quantimatter systems.
+    Optimized Self-Consistent Field solver for antiverse systems.
     """
     
     def __init__(self, 

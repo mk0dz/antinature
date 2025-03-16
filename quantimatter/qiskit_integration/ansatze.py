@@ -1,4 +1,4 @@
-# quantimatter/qiskit_integration/ansatze.py
+# antiverse/qiskit_integration/ansatze.py
 
 import numpy as np
 from typing import List, Optional, Union, Dict
@@ -12,9 +12,9 @@ except ImportError:
     HAS_QISKIT = False
     print("Warning: Qiskit not available. Ansatz functionality will be limited.")
 
-class quantimatterAnsatz:
+class antiverseAnsatz:
     """
-    Collection of specialized quantum ansätze for quantimatter systems.
+    Collection of specialized quantum ansätze for antiverse systems.
     """
     
     @staticmethod
