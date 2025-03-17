@@ -142,7 +142,7 @@ def create_antinature_calculation(
     integral_engine = AntinatureIntegralEngine()
     
     # Create Hamiltonian with the integral engine
-    hamiltonian = antinatureHamiltonian(
+    hamiltonian = AntinatureHamiltonian(
         molecular_data=molecule_data,
         basis_set=basis,
         integral_engine=integral_engine,
@@ -161,7 +161,7 @@ def create_antinature_calculation(
         hamiltonian = rel_correction.apply_corrections()
     
     # Run SCF calculation
-    scf_solver = antinatureSCF(
+    scf_solver = AntinatureSCF(
         hamiltonian=hamiltonian_matrices,
         basis_set=basis,
         molecular_data=molecule_data,
@@ -203,7 +203,7 @@ def run_antinature_calculation(configuration: Dict) -> Dict:
     post_scf_results = {}
     
     if configuration.get('run_mp2', False):
-        correlation = antinatureCorrelation(
+        correlation = AntinatureCorrelation(
             scf_result=scf_results,
             hamiltonian=configuration['hamiltonian_matrices'],
             basis=configuration['basis_set']

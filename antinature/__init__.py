@@ -25,7 +25,7 @@ from .core.correlation import AntinatureCorrelation
 from .core.integral_engine import AntinatureIntegralEngine
 
 # Specialized components
-from .specialized.relativistic import AelativisticCorrection
+from .specialized.relativistic import RelativisticCorrection
 from .specialized.annihilation import AnnihilationOperator
 from .specialized.positronium import PositroniumSCF
 from .specialized.visualization import AntinatureVisualizer

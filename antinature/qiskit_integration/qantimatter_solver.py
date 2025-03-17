@@ -17,7 +17,7 @@ except ImportError:
 from .systems import AntinatureQuantumSystems
 from .vqe_solver import AntinatureVQESolver
 
-class antinatureQuantumSolver:
+class AntinatureQuantumSolver:
     """
     Quantum solver for antinature systems using Qiskit.
     

@@ -14,7 +14,7 @@ from ..core.scf import AntinatureSCF
 from ..core.basis import MixedMatterBasis
 
 
-class PositroniumSCF(antinatureSCF):
+class PositroniumSCF(AntinatureSCF):
     """
     Specialized SCF solver optimized for positronium systems.
     
