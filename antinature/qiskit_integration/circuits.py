@@ -9,7 +9,7 @@ try:
     from qiskit.circuit import Parameter, ParameterVector
     from qiskit.circuit.library import EfficientSU2, TwoLocal, NLocal, RealAmplitudes
     from qiskit.transpiler import PassManager
-    from qiskit.transpiler.passes import Unroller, UnrollCustomDefinitions
+    from qiskit.transpiler.passes import Unroll3qOrMore, UnrollCustomDefinitions
     HAS_QISKIT = True
 except ImportError:
     HAS_QISKIT = False
@@ -86,7 +86,9 @@ class AntinatureCircuits:
         # Add optimization passes based on level
         if self.optimization_level >= 1:
             # Basic optimization - unroll custom gates
-            self.pass_manager.append(UnrollCustomDefinitions())
+            from qiskit.circuit.equivalence_library import EquivalenceLibrary
+            eq_lib = EquivalenceLibrary()
+            self.pass_manager.append(UnrollCustomDefinitions(equivalence_library=eq_lib))
         
         # For hardware-aware optimization, additional setup would be needed
         if self.hardware_aware and self.backend is not None:
@@ -662,7 +664,7 @@ class PositroniumCircuit:
         # Initialize transpiler pass manager if needed
         if optimization_level > 0:
             self.pass_manager = PassManager()
-            self.pass_manager.append(Unroller(['u', 'cx']))
+            self.pass_manager.append(Unroll3qOrMore(['u', 'cx']))
     
     def create_registers(self) -> Dict:
         """

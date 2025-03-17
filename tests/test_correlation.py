@@ -92,7 +92,7 @@ def test_correlation():
     corr = AntinatureCorrelation(
         scf_result=scf_results,
         hamiltonian=h_matrices,
-        basis=basis
+        basis_set=basis
     )
     
     # Calculate MP2 energy
@@ -168,7 +168,7 @@ def test_correlation():
     ps_corr = AntinatureCorrelation(
         scf_result=ps_results,
         hamiltonian=ps_matrices,
-        basis=ps_basis
+        basis_set=ps_basis
     )
     
     # Calculate MP2 energy with electron-positron correlation

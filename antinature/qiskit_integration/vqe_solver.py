@@ -14,7 +14,7 @@ try:
     )
     from qiskit.primitives import Estimator, BackendEstimator
     from qiskit import QuantumCircuit
-    from qiskit.circuit import Parameter
+    from qiskit.circuit import Parameter, ParameterVector
     from qiskit.providers import Backend
     from qiskit.quantum_info import Statevector, Operator
     from qiskit.result import Result
@@ -163,14 +163,12 @@ class AntinatureVQESolver:
             'tol': 1e-8
         }
         
+        # Updated SPSA options - removed the c0-c4 parameters that may not be supported in newer versions
         spsa_options = {
             'maxiter': self.max_iterations,
-            'c0': 0.1,
-            'c1': 0.1,
-            'c2': 0.602,
-            'c3': 0.101,
-            'c4': 0.0,
-            'skip_calibration': True
+            'learning_rate': 0.05,
+            'perturbation': 0.1,
+            'last_avg': 1
         }
         
         lbfgs_options = {

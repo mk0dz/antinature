@@ -82,7 +82,10 @@ def test_annihilation_operator():
     
     # Calculate annihilation rates
     rate = ann_op.calculate_annihilation_rate()
-    print(f"  Annihilation rate: {rate:.6e} au")
+    print(f"  Annihilation rate details: {rate}")
+    print(f"  Two-gamma rate: {rate['two_gamma']['rate']:.6e} au")
+    print(f"  Three-gamma rate: {rate['three_gamma']['rate']:.6e} au")
+    print(f"  Total rate: {rate['total_rate']:.6e} au")
     
     # Calculate lifetime (if the method exists)
     try:
