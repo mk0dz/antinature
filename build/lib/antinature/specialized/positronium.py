@@ -10,7 +10,7 @@ from typing import Dict, Optional, List, Tuple
 from scipy.linalg import eigh, inv, sqrtm
 import time
 
-from ..core.scf import AntinatureSCF
+from ..core.scf import antinatureSCF
 from ..core.basis import MixedMatterBasis
 
 

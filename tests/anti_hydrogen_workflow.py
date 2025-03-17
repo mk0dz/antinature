@@ -5,9 +5,9 @@ from mpl_toolkits.mplot3d import Axes3D
 import antinature
 from antinature.core import MolecularData
 from antinature.core.basis import MixedMatterBasis
-from antinature.core.integral_engine import antinatureIntegralEngine
-from antinature.core.hamiltonian import antinatureHamiltonian
-from antinature.core.scf import antinatureSCF
+from antinature.core.integral_engine import AntinatureIntegralEnginentinatureIntegralEngine
+from antinature.core.hamiltonian import AntinatureHamiltonian
+from antinature.core.scf import AntinatureSCF
 
 from antinature.specialized import PositroniumSCF
 from antinature.specialized.relativistic import RelativisticCorrection
