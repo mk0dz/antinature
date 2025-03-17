@@ -134,17 +134,24 @@ def create_antiverse_calculation(
         quality = basis_options.get('quality', 'standard')
         basis.create_for_molecule(
             molecule_data.atoms,
-            electron_quality=quality,
-            positron_quality=quality
+            e_quality=quality,
+            p_quality=quality
         )
     
-    # Create integral engine and compute integrals
+    # Create integral engine
     integral_engine = antiverseIntegralEngine()
-    integrals = integral_engine.compute_all_integrals(molecule_data, basis)
     
-    # Create Hamiltonian
-    hamiltonian = antiverseHamiltonian()
-    hamiltonian.build_hamiltonian(integrals, molecule_data, basis)
+    # Create Hamiltonian with the integral engine
+    hamiltonian = antiverseHamiltonian(
+        molecular_data=molecule_data,
+        basis_set=basis,
+        integral_engine=integral_engine,
+        include_annihilation=calculation_options.get('include_annihilation', True),
+        include_relativistic=calculation_options.get('include_relativistic', False)
+    )
+    
+    # Build the Hamiltonian (this will compute all necessary integrals)
+    hamiltonian_matrices = hamiltonian.build_hamiltonian()
     
     # Apply relativistic corrections if requested
     if calculation_options.get('include_relativistic', False):
@@ -155,13 +162,13 @@ def create_antiverse_calculation(
     
     # Run SCF calculation
     scf_solver = antiverseSCF(
-        hamiltonian=hamiltonian,
+        hamiltonian=hamiltonian_matrices,
         basis_set=basis,
         molecular_data=molecule_data,
         **calculation_options.get('scf_options', {})
     )
     
-    scf_result = scf_solver.run()
+    scf_result = scf_solver.solve_scf()
     
     # Calculate annihilation rate if requested
     if calculation_options.get('include_annihilation', False) and molecule_data.n_positrons > 0:

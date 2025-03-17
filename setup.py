@@ -7,9 +7,10 @@ setup(
     name="antiverse",
     version="0.1.0",
     packages=find_packages(),
+    py_modules=['antiverse', 'antiverse'],
     install_requires=[
         "numpy>=1.20.0",
-        "scipy>=1.15.2",
+        "scipy>=1.5.2,<2.0.0",
         "matplotlib>=3.4.0",
         "typing-extensions>=4.0.0",
     ],
