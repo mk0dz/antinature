@@ -22,19 +22,19 @@ from .adapter import QiskitNatureAdapter
 from .circuits import AntinatureCircuits, PositroniumCircuit
 from .solver import PositroniumVQESolver
 from .systems import AntinatureQuantumSystems
-from .antinature_solver import AntinatureQuantumSolver
+from .antimatter_solver import AntinatureQuantumSolver
 from .vqe_solver import AntinatureVQESolver
 from .ansatze import AntinatureAnsatz
 
 # Define what should be exposed at package level
 __all__ = [
     'QiskitNatureAdapter',
-    'antinatureCircuits',
+    'AntinatureCircuits',
     'PositroniumCircuit',
     'PositroniumVQESolver',
-    'antinatureQuantumSystems',
-    'antinatureQuantumSolver',
-    'antinatureVQESolver',
-    'antinatureAnsatz',
+    'AntinatureQuantumSystems',
+    'AntinatureQuantumSolver',
+    'AntinatureVQESolver',
+    'AntinatureAnsatz',
     'HAS_QISKIT'
 ]
