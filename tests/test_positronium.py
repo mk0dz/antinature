@@ -6,13 +6,13 @@ against known analytical solutions.
 """
 
 import numpy as np
-from antiverse.core.molecular_data import MolecularData
-from antiverse.core.basis import MixedMatterBasis
-from antiverse.core.integral_engine import antiverseIntegralEngine
-from antiverse.core.hamiltonian import antiverseHamiltonian
-from antiverse.core.scf import antiverseSCF
-from antiverse.specialized.positronium import PositroniumSCF
-from antiverse.specialized.annihilation import AnnihilationOperator
+from antinature.core.molecular_data import MolecularData
+from antinature.core.basis import MixedMatterBasis
+from antinature.core.integral_engine import antinatureIntegralEngine
+from antinature.core.hamiltonian import antinatureHamiltonian
+from antinature.core.scf import antinatureSCF
+from antinature.specialized.positronium import PositroniumSCF
+from antinature.specialized.annihilation import AnnihilationOperator
 
 def test_positronium_energy():
     """
@@ -49,10 +49,10 @@ def test_positronium_energy():
         print(f"Basis set size: {basis.n_electron_basis} electron, {basis.n_positron_basis} positron")
         
         # Create integral engine
-        integral_engine = antiverseIntegralEngine()
+        integral_engine = antinatureIntegralEngine()
         
         # Create Hamiltonian
-        hamiltonian = antiverseHamiltonian(
+        hamiltonian = antinatureHamiltonian(
             molecular_data=positronium,
             basis_set=basis,
             integral_engine=integral_engine,
@@ -63,7 +63,7 @@ def test_positronium_energy():
         matrices = hamiltonian.build_hamiltonian()
         
         # Run SCF with regular solver
-        scf_standard = antiverseSCF(
+        scf_standard = antinatureSCF(
             hamiltonian=matrices,
             basis_set=basis,
             molecular_data=positronium
@@ -169,10 +169,10 @@ def test_positronium_lifetime():
         basis.create_for_molecule(positronium.atoms, 'extended', 'extended')
     
     # Create integral engine
-    integral_engine = antiverseIntegralEngine()
+    integral_engine = antinatureIntegralEngine()
     
     # Create Hamiltonian
-    hamiltonian = antiverseHamiltonian(
+    hamiltonian = antinatureHamiltonian(
         molecular_data=positronium,
         basis_set=basis,
         integral_engine=integral_engine,
@@ -191,7 +191,7 @@ def test_positronium_lifetime():
         )
         has_specialized = True
     except (ImportError, NameError):
-        scf = antiverseSCF(
+        scf = antinatureSCF(
             hamiltonian=matrices,
             basis_set=basis,
             molecular_data=positronium

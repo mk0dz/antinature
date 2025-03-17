@@ -1,11 +1,11 @@
-# test_antiverse_applications.py
+# test_antinature_applications.py
 
 import numpy as np
 import matplotlib.pyplot as plt
 import tests.workflow_positronium as workflow_positronium
 import tests.anti_hydrogen_workflow as anti_hydrogen_workflow
-from antiverse.specialized.visualization import visualize_annihilation_density
-from antiverse.specialized.visualization import plot_wavefunction
+from antinature.specialized.visualization import visualize_annihilation_density
+from antinature.specialized.visualization import plot_wavefunction
 
 def test_positronium():
     """Test positronium calculation and validate against theory."""

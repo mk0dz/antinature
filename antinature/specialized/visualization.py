@@ -1,5 +1,5 @@
 """
-Visualization functions for antiverse quantum chemistry.
+Visualization functions for antinature quantum chemistry.
 """
 
 import numpy as np
@@ -256,9 +256,9 @@ def plot_wavefunction(wavefunction: Dict, particle_type: str = 'electron', orbit
     plt.tight_layout()
     return fig
 
-class antiverseVisualizer:
+class AntinatureVisualizer:
     """
-    Visualization tools for antiverse systems and calculation results.
+    Visualization tools for antinature systems and calculation results.
     """
     
     def __init__(self, style: str = 'default'):

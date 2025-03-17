@@ -1,5 +1,5 @@
 """
-Utility functions for antiverse quantum chemistry calculations.
+Utility functions for antinature quantum chemistry calculations.
 """
 
 import numpy as np
@@ -10,10 +10,10 @@ import warnings
 # Import project modules
 from .core.molecular_data import MolecularData
 from .core.basis import MixedMatterBasis
-from .core.integral_engine import antiverseIntegralEngine
-from .core.hamiltonian import antiverseHamiltonian
-from .core.scf import antiverseSCF
-from .core.correlation import antiverseCorrelation
+from .core.integral_engine import AntinatureIntegralEngine
+from .core.hamiltonian import AntinatureHamiltonian
+from .core.scf import AntinatureSCF
+from .core.correlation import AntinatureCorrelation
 
 def check_dependencies(dependencies: Dict[str, str]) -> Tuple[bool, List[str]]:
     """
@@ -83,13 +83,13 @@ def check_optional_dependencies() -> Dict[str, bool]:
     
     return dependencies
 
-def create_antiverse_calculation(
+def create_antinature_calculation(
     molecule_data: Union[Dict, MolecularData],
     basis_options: Optional[Dict] = None,
     calculation_options: Optional[Dict] = None
 ) -> Dict:
     """
-    Create a complete antiverse calculation workflow.
+    Create a complete antinature calculation workflow.
     
     Parameters:
     -----------
@@ -139,10 +139,10 @@ def create_antiverse_calculation(
         )
     
     # Create integral engine
-    integral_engine = antiverseIntegralEngine()
+    integral_engine = AntinatureIntegralEngine()
     
     # Create Hamiltonian with the integral engine
-    hamiltonian = antiverseHamiltonian(
+    hamiltonian = antinatureHamiltonian(
         molecular_data=molecule_data,
         basis_set=basis,
         integral_engine=integral_engine,
@@ -161,7 +161,7 @@ def create_antiverse_calculation(
         hamiltonian = rel_correction.apply_corrections()
     
     # Run SCF calculation
-    scf_solver = antiverseSCF(
+    scf_solver = antinatureSCF(
         hamiltonian=hamiltonian_matrices,
         basis_set=basis,
         molecular_data=molecule_data,
@@ -179,14 +179,14 @@ def create_antiverse_calculation(
     
     return scf_result
 
-def run_antiverse_calculation(configuration: Dict) -> Dict:
+def run_antinature_calculation(configuration: Dict) -> Dict:
     """
-    Run a complete antiverse calculation using the provided configuration.
+    Run a complete antinature calculation using the provided configuration.
     
     Parameters:
     -----------
     configuration : Dict
-        Configuration from create_antiverse_calculation
+        Configuration from create_antinature_calculation
         
     Returns:
     --------
@@ -203,7 +203,7 @@ def run_antiverse_calculation(configuration: Dict) -> Dict:
     post_scf_results = {}
     
     if configuration.get('run_mp2', False):
-        correlation = antiverseCorrelation(
+        correlation = antinatureCorrelation(
             scf_result=scf_results,
             hamiltonian=configuration['hamiltonian_matrices'],
             basis=configuration['basis_set']

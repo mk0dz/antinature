@@ -3,9 +3,9 @@ from typing import List, Tuple, Dict, Optional
 from scipy.linalg import eigh, inv, sqrtm
 import time
 
-class antiverseSCF:
+class AntinatureSCF:
     """
-    Optimized Self-Consistent Field solver for antiverse systems.
+    Optimized Self-Consistent Field solver for antinature systems.
     """
     
     def __init__(self, 

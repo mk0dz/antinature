@@ -1,19 +1,19 @@
-# examples/antiverse_custom_ansatz.py
+# examples/antinature_custom_ansatz.py
 
 import numpy as np
 import matplotlib.pyplot as plt
-from antiverse.qiskit_integration import antiverseVQESolver
-from antiverse.qiskit_integration import antiverseQuantumSystems
+from antinature.qiskit_integration import antinatureVQESolver
+from antinature.qiskit_integration import antinatureQuantumSystems
 
 def main():
-    """Test specialized antiverse ansätze."""
-    print("=== Testing Specialized antiverse Ansätze ===")
+    """Test specialized antinature ansätze."""
+    print("=== Testing Specialized antinature Ansätze ===")
     
     # Create systems handler
-    systems = antiverseQuantumSystems()
+    systems = antinatureQuantumSystems()
     
     # Create solver
-    solver = antiverseVQESolver(
+    solver = antinatureVQESolver(
         optimizer_name='L_BFGS_B',  # Using L-BFGS-B for better convergence
         max_iterations=300,
         shots=2048
@@ -83,14 +83,14 @@ def main():
     plt.plot(x, theoretical_values, 'ro-', label='Theoretical')
     
     # Add labels and legend
-    plt.xlabel('antiverse System')
+    plt.xlabel('antinature System')
     plt.ylabel('Energy (Hartree)')
-    plt.title('Comparison of antiverse Ansätze')
+    plt.title('Comparison of antinature Ansätze')
     plt.xticks(x, system_names)
     plt.legend()
     
     plt.tight_layout()
-    plt.savefig('antiverse_ansatz_comparison.png')
+    plt.savefig('antinature_ansatz_comparison.png')
     
     print("\nResults saved and visualization created.")
     return results

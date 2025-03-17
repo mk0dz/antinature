@@ -1,4 +1,4 @@
-# antiverse/specialized/relativistic.py
+# antinature/specialized/relativistic.py
 
 import numpy as np
 from typing import List, Tuple, Dict, Optional
@@ -7,7 +7,7 @@ import time
 
 class RelativisticCorrection:
     """
-    Optimized relativistic corrections for antiverse systems.
+    Optimized relativistic corrections for antinature systems.
     """
     
     def __init__(self, 
@@ -143,7 +143,7 @@ class RelativisticCorrection:
                     overlap = self.basis_set.overlap_integral(i + n_e_basis, j + n_e_basis)
                     mass_velocity_p[i, j] = mv_factor * overlap
                     
-                    # Darwin term (sign is reversed compared to electrons)
+                    # Darwin term (sign is renatured compared to electrons)
                     darwin_sum = 0.0
                     for _, charge, position in self.nuclei:
                         r_i = func_i.evaluate(position)

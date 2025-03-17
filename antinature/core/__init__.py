@@ -1,7 +1,7 @@
 """
-Core components for antiverse quantum chemistry.
+Core components for antinature quantum chemistry.
 
-This module includes the fundamental building blocks for antiverse chemistry simulations:
+This module includes the fundamental building blocks for antinature chemistry simulations:
 - Basis sets for electrons and positrons
 - Molecular data structures
 - Hamiltonian construction
@@ -24,8 +24,8 @@ from .basis import (
 
 # Import core computational components
 from .molecular_data import MolecularData
-from .hamiltonian import antiverseHamiltonian
-from .scf import antiverseSCF
-from .correlation import antiverseCorrelation
-from .integral_engine import antiverseIntegralEngine
+from .hamiltonian import AntinatureHamiltonian
+from .scf import AntinatureSCF
+from .correlation import AntinatureCorrelation
+from .integral_engine import AntinatureIntegralEngine
 # Add imports for other modules when they're created

@@ -3,9 +3,9 @@ from scipy.special import erf
 from functools import lru_cache
 import threading
 
-class antiverseIntegralEngine:
+class AntinatureIntegralEngine:
     """
-    Optimized integral engine for antiverse systems with caching and threading.
+    Optimized integral engine for antinature systems with caching and threading.
     """
     
     def __init__(self, use_analytical: bool = True, cache_size: int = 10000):

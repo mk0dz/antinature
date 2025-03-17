@@ -1,7 +1,7 @@
 """
-Specialized physics module for antiverse quantum chemistry.
+Specialized physics module for antinature quantum chemistry.
 
-This module provides specialized physics components for antiverse systems,
+This module provides specialized physics components for antinature systems,
 including annihilation operators and relativistic corrections.
 """
 

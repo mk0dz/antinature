@@ -4,14 +4,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
-from antiverse.core.molecular_data import MolecularData
-from antiverse.core.basis import MixedMatterBasis
-from antiverse.core.integral_engine import antiverseIntegralEngine
-from antiverse.core.hamiltonian import antiverseHamiltonian
-from antiverse.core.scf import antiverseSCF
+from antinature.core.molecular_data import MolecularData
+from antinature.core.basis import MixedMatterBasis
+from antinature.core.integral_engine import antinatureIntegralEngine
+from antinature.core.hamiltonian import antinatureHamiltonian
+from antinature.core.scf import antinatureSCF
 
-from antiverse.specialized.relativistic import RelativisticCorrection
-from antiverse.specialized.annihilation import AnnihilationOperator
+from antinature.specialized.relativistic import RelativisticCorrection
+from antinature.specialized.annihilation import AnnihilationOperator
 
 def test_relativistic_corrections():
     print("\n=== Testing Relativistic Corrections ===")
@@ -30,10 +30,10 @@ def test_relativistic_corrections():
     basis.create_for_molecule(helium.atoms, 'standard', 'standard')
     
     # Create integral engine
-    integral_engine = antiverseIntegralEngine()
+    integral_engine = antinatureIntegralEngine()
     
     # Create Hamiltonian
-    hamiltonian = antiverseHamiltonian(
+    hamiltonian = antinatureHamiltonian(
         molecular_data=helium,
         basis_set=basis,
         integral_engine=integral_engine
@@ -71,7 +71,7 @@ def test_relativistic_corrections():
     
     # Run SCF with non-relativistic Hamiltonian
     print("\nRunning non-relativistic SCF...")
-    scf_nonrel = antiverseSCF(
+    scf_nonrel = antinatureSCF(
         hamiltonian=matrices,
         basis_set=basis,
         molecular_data=helium
@@ -80,7 +80,7 @@ def test_relativistic_corrections():
     
     # Run SCF with relativistic Hamiltonian
     print("\nRunning relativistic SCF...")
-    scf_rel = antiverseSCF(
+    scf_rel = antinatureSCF(
         hamiltonian=corrected_hamiltonian,
         basis_set=basis,
         molecular_data=helium
@@ -109,10 +109,10 @@ def test_annihilation_physics():
     basis.create_for_molecule(positronium.atoms, 'extended', 'extended')  # Use extended basis for better results
     
     # Create integral engine
-    integral_engine = antiverseIntegralEngine()
+    integral_engine = antinatureIntegralEngine()
     
     # Create Hamiltonian
-    hamiltonian = antiverseHamiltonian(
+    hamiltonian = antinatureHamiltonian(
         molecular_data=positronium,
         basis_set=basis,
         integral_engine=integral_engine,
@@ -124,7 +124,7 @@ def test_annihilation_physics():
     
     # Run SCF calculation
     print("Running SCF calculation for positronium...")
-    scf = antiverseSCF(
+    scf = antinatureSCF(
         hamiltonian=matrices,
         basis_set=basis,
         molecular_data=positronium

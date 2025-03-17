@@ -2,16 +2,16 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
-import antiverse
-from antiverse.core import MolecularData
-from antiverse.core.basis import MixedMatterBasis
-from antiverse.core.integral_engine import antiverseIntegralEngine
-from antiverse.core.hamiltonian import antiverseHamiltonian
-from antiverse.core.scf import antiverseSCF
+import antinature
+from antinature.core import MolecularData
+from antinature.core.basis import MixedMatterBasis
+from antinature.core.integral_engine import antinatureIntegralEngine
+from antinature.core.hamiltonian import antinatureHamiltonian
+from antinature.core.scf import antinatureSCF
 
-from antiverse.specialized import PositroniumSCF
-from antiverse.specialized.relativistic import RelativisticCorrection
-from antiverse.specialized.annihilation import AnnihilationOperator
+from antinature.specialized import PositroniumSCF
+from antinature.specialized.relativistic import RelativisticCorrection
+from antinature.specialized.annihilation import AnnihilationOperator
 
 
 
@@ -45,11 +45,11 @@ def anti_hydrogen_workflow(basis_quality='extended', include_relativistic=True):
     print(f"Basis sets created: {basis.n_electron_basis} electron, {basis.n_positron_basis} positron functions")
     
     # 3. Create integral engine
-    integral_engine = antiverseIntegralEngine()
+    integral_engine = antinatureIntegralEngine()
     
     # 4. Create Hamiltonian
     print("Building Hamiltonian...")
-    hamiltonian = antiverseHamiltonian(
+    hamiltonian = antinatureHamiltonian(
         molecular_data=anti_h,
         basis_set=basis,
         integral_engine=integral_engine,
@@ -76,7 +76,7 @@ def anti_hydrogen_workflow(basis_quality='extended', include_relativistic=True):
     
     # 6. Run SCF calculation
     print("Running SCF calculation...")
-    scf = antiverseSCF(
+    scf = antinatureSCF(
         hamiltonian=matrices,
         basis_set=basis,
         molecular_data=anti_h

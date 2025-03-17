@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-Quantum Computing antiverse Simulation Example
+Quantum Computing antinature Simulation Example
 ==============================================
 
 This example demonstrates how to set up and run a quantum computing simulation
-of positronium using the antiverse package with Qiskit integration.
+of positronium using the antinature package with Qiskit integration.
 """
 
 import numpy as np
@@ -16,19 +16,19 @@ try:
     HAS_QISKIT = True
 except ImportError:
     HAS_QISKIT = False
-    print("Warning: This example requires Qiskit. Install with 'pip install antiverse[qiskit]'")
+    print("Warning: This example requires Qiskit. Install with 'pip install antinature[qiskit]'")
     import sys
     sys.exit(1)
 
-from antiverse.core.molecular_data import MolecularData
-from antiverse.core.basis import MixedMatterBasis
-from antiverse.core.integral_engine import antiverseIntegralEngine
-from antiverse.core.hamiltonian import antiverseHamiltonian
-from antiverse.qiskit_integration import antiverseQuantumSolver, antiverseQuantumSystems
-from antiverse.qiskit_integration.ansatze import antiverseAnsatz
+from antinature.core.molecular_data import MolecularData
+from antinature.core.basis import MixedMatterBasis
+from antinature.core.integral_engine import antinatureIntegralEngine
+from antinature.core.hamiltonian import antinatureHamiltonian
+from antinature.qiskit_integration import antinatureQuantumSolver, antinatureQuantumSystems
+from antinature.qiskit_integration.ansatze import antinatureAnsatz
 
 def main():
-    print("Quantum Computing antiverse Simulation Example")
+    print("Quantum Computing antinature Simulation Example")
     print("==============================================")
     
     # Step 1: Create positronium system
@@ -41,23 +41,23 @@ def main():
     basis = MixedMatterBasis()
     basis.create_positronium_basis(quality='minimal')  # Small basis for quantum simulation
     
-    integral_engine = antiverseIntegralEngine()
+    integral_engine = antinatureIntegralEngine()
     integrals = integral_engine.compute_all_integrals(positronium, basis)
     
-    hamiltonian = antiverseHamiltonian()
+    hamiltonian = antinatureHamiltonian()
     hamiltonian.build_hamiltonian(integrals, positronium, basis)
     print("Hamiltonian constructed")
     
     # Step 3: Setup quantum systems
     print("\nSetting up quantum system...")
-    quantum_systems = antiverseQuantumSystems(mapper_type='jordan_wigner')
+    quantum_systems = antinatureQuantumSystems(mapper_type='jordan_wigner')
     operator = quantum_systems.get_positronium_operator(hamiltonian)
     
     print(f"Quantum operator created with {operator.num_qubits} qubits")
     
     # Step 4: Create and display quantum ansatz
     print("\nCreating specialized positronium ansatz...")
-    ansatz = antiverseAnsatz.positronium_ansatz(reps=2)
+    ansatz = antinatureAnsatz.positronium_ansatz(reps=2)
     print(f"Ansatz created with {ansatz.num_qubits} qubits and {ansatz.num_parameters} parameters")
     
     # Display circuit
@@ -71,7 +71,7 @@ def main():
     
     # Step 5: Set up quantum solver
     print("\nInitializing quantum solver...")
-    quantum_solver = antiverseQuantumSolver(
+    quantum_solver = antinatureQuantumSolver(
         use_exact_solver=False,  # Use VQE
         optimizer_name='COBYLA',
         max_iterations=100,

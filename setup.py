@@ -4,10 +4,10 @@ with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setup(
-    name="antiverse",
+    name="antinature",
     version="0.1.0",
     packages=find_packages(),
-    py_modules=['antiverse', 'antiverse'],
+    py_modules=['antinature', 'antinature'],
     install_requires=[
         "numpy>=1.20.0",
         "scipy>=1.5.2,<2.0.0",
@@ -32,10 +32,10 @@ setup(
     description="Quantum chemistry package for antimatter simulations",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/mk0dz/antiverse",
+    url="https://github.com/mk0dz/antinature",
     project_urls={
-        "Bug Tracker": "https://github.com/mk0dz/antiverse/issues",
-        "Documentation": "https://github.com/mk0dz/antiverse",
+        "Bug Tracker": "https://github.com/mk0dz/antinature/issues",
+        "Documentation": "https://github.com/mk0dz/antinature",
     },
     classifiers=[
         "Programming Language :: Python :: 3",

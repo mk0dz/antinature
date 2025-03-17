@@ -1,4 +1,4 @@
-# antiverse/specialized/annihilation.py
+# antinature/specialized/annihilation.py
 
 import numpy as np
 from typing import List, Tuple, Dict, Optional

@@ -1,9 +1,9 @@
 """
-antiverse Quantum Chemistry Framework
+antinature Quantum Chemistry Framework
 ======================================
 
-A high-performance framework for simulating antiverse systems, including
-positronium, anti-hydrogen, and other exotic matter-antiverse configurations.
+A high-performance framework for simulating antinature systems, including
+positronium, anti-hydrogen, and other exotic matter-antinature configurations.
 
 The package includes specialized algorithms for positrons and positron-electron
 interactions, relativistic corrections, and electron-positron annihilation processes.
@@ -19,26 +19,26 @@ from .core.basis import (
     MixedMatterBasis
 )
 from .core.molecular_data import MolecularData
-from .core.hamiltonian import antiverseHamiltonian
-from .core.scf import antiverseSCF
-from .core.correlation import antiverseCorrelation
-from .core.integral_engine import antiverseIntegralEngine
+from .core.hamiltonian import AntinatureHamiltonian
+from .core.scf import AntinatureSCF
+from .core.correlation import AntinatureCorrelation
+from .core.integral_engine import AntinatureIntegralEngine
 
 # Specialized components
-from .specialized.relativistic import RelativisticCorrection
+from .specialized.relativistic import AelativisticCorrection
 from .specialized.annihilation import AnnihilationOperator
 from .specialized.positronium import PositroniumSCF
-from .specialized.visualization import antiverseVisualizer
+from .specialized.visualization import AntinatureVisualizer
 
 # Utilities
-from .utils import create_antiverse_calculation
+from .utils import create_antinature_calculation
 
 # Attempt to import optional quantum components
 try:
     from .qiskit_integration import (
-        antiverseQuantumSolver,
-        antiverseQuantumSystems,
-        antiverseVQESolver
+        AntinatureQuantumSolver,
+        AntinatureQuantumSystems,
+        AntinatureVQESolver
     )
     HAS_QISKIT = True
 except ImportError:

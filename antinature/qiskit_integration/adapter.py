@@ -1,4 +1,4 @@
-# antiverse/qiskit_integration/adapter.py
+# antinature/qiskit_integration/adapter.py
 
 import numpy as np
 from typing import Dict, List, Optional, Tuple, Any

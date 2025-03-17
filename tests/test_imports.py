@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
 """
-Simple script to verify imports from antiverse package
+Simple script to verify imports from antinature package
 """
 
 import sys
 
 try:
     # Basic imports
-    import antiverse
-    from antiverse.core.molecular_data import MolecularData
-    from antiverse.core.basis import MixedMatterBasis
+    import antinature
+    from antinature.core.molecular_data import MolecularData
+    from antinature.core.basis import MixedMatterBasis
     
     print("✅ Imports working correctly!")
-    print(f"Package version: {antiverse.__version__}")
+    print(f"Package version: {antinature.__version__}")
     
     # Create a simple positronium system
     pos = MolecularData.positronium()

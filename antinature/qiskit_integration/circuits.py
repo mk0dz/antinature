@@ -1,4 +1,4 @@
-# antiverse/qiskit_integration/circuits.py
+# antinature/qiskit_integration/circuits.py
 
 import numpy as np
 from typing import Dict, List, Optional, Union, Tuple
@@ -13,16 +13,16 @@ except ImportError:
     HAS_QISKIT = False
     print("Warning: Qiskit not available. Functionality limited.")
 
-class antiverseCircuits:
+class AntinatureCircuits:
     """
-    General class for creating quantum circuits for antiverse systems.
-    Provides methods to create circuits for various antiverse systems
+    General class for creating quantum circuits for antinature systems.
+    Provides methods to create circuits for various antinature systems
     including positronium, anti-hydrogen, and more complex systems.
     """
     
     def __init__(self, n_electron_orbitals: int = 2, n_positron_orbitals: int = 2):
         """
-        Initialize antiverse circuits generator.
+        Initialize antinature circuits generator.
         
         Parameters:
         -----------
@@ -237,7 +237,7 @@ class antiverseCircuits:
     
     def create_efficient_su2_ansatz(self, reps: int = 2) -> QuantumCircuit:
         """
-        Create an EfficientSU2 ansatz for the antiverse system.
+        Create an EfficientSU2 ansatz for the antinature system.
         
         Parameters:
         -----------

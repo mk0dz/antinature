@@ -1,4 +1,4 @@
-# antiverse/qiskit_integration/antiverse_solver.py
+# antinature/qiskit_integration/antinature_solver.py
 
 import numpy as np
 from typing import Dict, List, Optional, Union, Tuple, Any
@@ -14,14 +14,14 @@ except ImportError:
     print("Warning: Qiskit Algorithms not available. Limited functionality.")
 
 # Import our quantum systems with relative import
-from .systems import antiverseQuantumSystems
-from .vqe_solver import antiverseVQESolver
+from .systems import AntinatureQuantumSystems
+from .vqe_solver import AntinatureVQESolver
 
-class antiverseQuantumSolver:
+class antinatureQuantumSolver:
     """
-    Quantum solver for antiverse systems using Qiskit.
+    Quantum solver for antinature systems using Qiskit.
     
-    This class serves as the main interface for solving antiverse systems
+    This class serves as the main interface for solving antinature systems
     using quantum computing approaches, supporting VQE and exact solvers.
     """
     
@@ -32,7 +32,7 @@ class antiverseQuantumSolver:
                 shots: int = 2048,
                 mapper_type: str = 'jordan_wigner'):
         """
-        Initialize the antiverse quantum solver.
+        Initialize the antinature quantum solver.
         
         Parameters:
         -----------
@@ -57,11 +57,11 @@ class antiverseQuantumSolver:
         self.mapper_type = mapper_type
         
         # Initialize the quantum systems object
-        self.systems = antiverseQuantumSystems(mapper_type=mapper_type)
+        self.systems = AntinatureQuantumSystems(mapper_type=mapper_type)
         
         # Initialize VQE solver if needed
         if not use_exact_solver:
-            self.vqe_solver = antiverseVQESolver(
+            self.vqe_solver = AntinatureVQESolver(
                 optimizer_name=optimizer_name,
                 max_iterations=max_iterations,
                 shots=shots
@@ -257,7 +257,7 @@ class antiverseQuantumSolver:
                            reps: int = 3,
                            apply_correction: bool = False) -> Dict:
         """
-        Solve a custom antiverse system with user-provided Hamiltonian.
+        Solve a custom antinature system with user-provided Hamiltonian.
         
         Parameters:
         -----------
@@ -318,7 +318,7 @@ class antiverseQuantumSolver:
                        ansatz_types: List[str] = ['specialized', 'hardware_efficient'],
                        exact: bool = True) -> Dict[str, Dict]:
         """
-        Compare different solution methods for a given antiverse system.
+        Compare different solution methods for a given antinature system.
         
         Parameters:
         -----------

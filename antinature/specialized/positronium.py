@@ -10,15 +10,15 @@ from typing import Dict, Optional, List, Tuple
 from scipy.linalg import eigh, inv, sqrtm
 import time
 
-from ..core.scf import antiverseSCF
+from ..core.scf import antinatureSCF
 from ..core.basis import MixedMatterBasis
 
 
-class PositroniumSCF(antiverseSCF):
+class PositroniumSCF(antinatureSCF):
     """
     Specialized SCF solver optimized for positronium systems.
     
-    This class extends the antiverseSCF with positronium-specific
+    This class extends the antinatureSCF with positronium-specific
     methods that account for the unique physics of this system.
     """
     
@@ -33,7 +33,7 @@ class PositroniumSCF(antiverseSCF):
         """
         Initialize positronium SCF solver.
         
-        Parameters are the same as antiverseSCF.
+        Parameters are the same as antinatureSCF.
         """
         super().__init__(
             hamiltonian=hamiltonian,

@@ -2,9 +2,9 @@ import numpy as np
 from typing import List, Tuple, Dict, Optional
 from scipy.linalg import eigh, inv, sqrtm
 
-class antiverseCorrelation:
+class AntinatureCorrelation:
     """
-    Post-SCF correlation methods for antiverse systems.
+    Post-SCF correlation methods for antinature systems.
     """
     def __init__(self, scf_result: Dict, hamiltonian: Dict, basis: 'MixedMatterBasis'):
         """
@@ -213,7 +213,7 @@ class antiverseCorrelation:
     
     def coupled_cluster(self, level='CCSD'):
         """
-        Perform coupled-cluster calculation for the antiverse system.
+        Perform coupled-cluster calculation for the antinature system.
         
         Parameters:
         -----------

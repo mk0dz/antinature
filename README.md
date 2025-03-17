@@ -1,16 +1,16 @@
-# Antimatter Quantum Chemistry (antiverse)
+# Antimatter Quantum Chemistry (antinature)
 
 [![Python Version](https://img.shields.io/badge/python-3.8%2B-blue)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
-A high-performance quantum chemistry framework designed specifically for simulating antimatter systems, including positronium, anti-hydrogen, and other exotic matter-antiverse configurations.
+A high-performance quantum chemistry framework designed specifically for simulating antimatter systems, including positronium, anti-hydrogen, and other exotic matter-antinature configurations.
 
 ## Features
 
-- **Specialized antiverse Physics**: Dedicated algorithms for positrons and positron-electron interactions
-- **Relativistic Corrections**: Implementation of relativistic effects critical for accurate antiverse modeling
+- **Specialized antinature Physics**: Dedicated algorithms for positrons and positron-electron interactions
+- **Relativistic Corrections**: Implementation of relativistic effects critical for accurate antinature modeling
 - **Annihilation Processes**: Modeling of electron-positron annihilation dynamics
-- **Quantum Computing Integration**: Built-in Qiskit integration for quantum simulations of antiverse systems
+- **Quantum Computing Integration**: Built-in Qiskit integration for quantum simulations of antinature systems
 - **Validation Tools**: Framework for verifying results against known theoretical benchmarks
 
 ## Installation
@@ -18,27 +18,27 @@ A high-performance quantum chemistry framework designed specifically for simulat
 ### Basic Installation
 
 ```bash
-pip install antiverse
+pip install antinature
 ```
 
 ### Installation with Quantum Computing Support
 
 ```bash
-pip install antiverse[qiskit]
+pip install antinature[qiskit]
 ```
 
 ## Quick Start
 
 ```python
 import numpy as np
-from antiverse.core.molecular_data import MolecularData
-from antiverse.utils import create_antiverse_calculation
+from antinature.core.molecular_data import MolecularData
+from antinature.utils import create_antinature_calculation
 
 # Create a positronium system (electron-positron bound state)
 positronium = MolecularData.positronium()
 
 # Configure and run the calculation
-result = create_antiverse_calculation(
+result = create_antinature_calculation(
     positronium,
     basis_options={'quality': 'positronium'},
     calculation_options={
@@ -55,10 +55,10 @@ print(f"Lifetime: {result['lifetime_ns']:.4f} ns")
 
 ## Examples
 
-The package includes several example scripts for common antiverse research scenarios:
+The package includes several example scripts for common antinature research scenarios:
 
 - `examples/positronium_simulation.py`: Basic positronium energy calculation
-- `examples/quantum_antiverse.py`: Quantum computing simulation of positronium
+- `examples/quantum_antinature.py`: Quantum computing simulation of positronium
 - `examples/anti_hydrogen.py`: Anti-hydrogen atom calculations
 
 ## Citing This Work
@@ -66,10 +66,10 @@ The package includes several example scripts for common antiverse research scena
 If you use this package in your research, please cite:
 
 ```
-@software{antiverse,
+@software{antinature,
   author = {mk0dz},
-  title = {antiverse Quantum Chemistry},
-  url = {https://github.com/mk0dz/antiverse},
+  title = {antinature Quantum Chemistry},
+  url = {https://github.com/mk0dz/antinature},
   version = {0.1.0},
   year = {2023},
 }

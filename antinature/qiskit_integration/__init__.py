@@ -1,8 +1,8 @@
 """
-Qiskit integration module for antiverse2 quantum chemistry.
+Qiskit integration module for antinature quantum chemistry.
 
 This module provides integration with Qiskit and Qiskit-Nature
-for simulating antiverse2 systems on quantum computers.
+for simulating antinature systems on quantum computers.
 """
 
 # Check if Qiskit is available
@@ -19,22 +19,22 @@ except ImportError:
 
 # Always import the modules, but the classes will raise an error if Qiskit is not available
 from .adapter import QiskitNatureAdapter
-from .circuits import antiverse2Circuits, PositroniumCircuit
+from .circuits import AntinatureCircuits, PositroniumCircuit
 from .solver import PositroniumVQESolver
-from .systems import antiverse2QuantumSystems
-from .antiverse2_solver import antiverse2QuantumSolver
-from .vqe_solver import antiverse2VQESolver
-from .ansatze import antiverse2Ansatz
+from .systems import AntinatureQuantumSystems
+from .antinature_solver import AntinatureQuantumSolver
+from .vqe_solver import AntinatureVQESolver
+from .ansatze import AntinatureAnsatz
 
 # Define what should be exposed at package level
 __all__ = [
     'QiskitNatureAdapter',
-    'antiverse2Circuits',
+    'antinatureCircuits',
     'PositroniumCircuit',
     'PositroniumVQESolver',
-    'antiverse2QuantumSystems',
-    'antiverse2QuantumSolver',
-    'antiverse2VQESolver',
-    'antiverse2Ansatz',
+    'antinatureQuantumSystems',
+    'antinatureQuantumSolver',
+    'antinatureVQESolver',
+    'antinatureAnsatz',
     'HAS_QISKIT'
 ]

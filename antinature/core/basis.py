@@ -1,4 +1,4 @@
-# antiverse/core/basis.py
+# antinature/core/basis.py
 
 import numpy as np
 from typing import List, Tuple, Optional, Dict
@@ -344,7 +344,7 @@ class PositronBasis(BasisSet):
 
 class MixedMatterBasis:
     """
-    Combined basis set for mixed matter/antiverse calculations.
+    Combined basis set for mixed matter/antinature calculations.
     """
     
     def __init__(self, 

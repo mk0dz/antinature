@@ -26,12 +26,12 @@ def positronium_workflow(basis_quality='positronium', include_relativistic=True)
     
     # 1. Create positronium system
     print("Creating positronium system...")
-    from antiverse.core.molecular_data import MolecularData
+    from antinature.core.molecular_data import MolecularData
     positronium = MolecularData.positronium()
     
     # 2. Create basis sets
     print("Creating basis sets...")
-    from antiverse.core.basis import MixedMatterBasis
+    from antinature.core.basis import MixedMatterBasis
     basis = MixedMatterBasis()
     
     # Use specialized positronium basis if available and requested
@@ -43,13 +43,13 @@ def positronium_workflow(basis_quality='positronium', include_relativistic=True)
     print(f"Basis sets created: {basis.n_electron_basis} electron, {basis.n_positron_basis} positron functions")
     
     # 3. Create integral engine
-    from antiverse.core.integral_engine import antiverseIntegralEngine
-    integral_engine = antiverseIntegralEngine()
+    from antinature.core.integral_engine import antinatureIntegralEngine
+    integral_engine = antinatureIntegralEngine()
     
     # 4. Create Hamiltonian
     print("Building Hamiltonian...")
-    from antiverse.core.hamiltonian import antiverseHamiltonian
-    hamiltonian = antiverseHamiltonian(
+    from antinature.core.hamiltonian import antinatureHamiltonian
+    hamiltonian = antinatureHamiltonian(
         molecular_data=positronium,
         basis_set=basis,
         integral_engine=integral_engine,
@@ -60,7 +60,7 @@ def positronium_workflow(basis_quality='positronium', include_relativistic=True)
     # 5. Apply relativistic corrections if requested
     if include_relativistic:
         print("Applying relativistic corrections...")
-        from antiverse.specialized.relativistic import RelativisticCorrection
+        from antinature.specialized.relativistic import RelativisticCorrection
         relativistic = RelativisticCorrection(
             hamiltonian=matrices,
             basis_set=basis,
@@ -73,7 +73,7 @@ def positronium_workflow(basis_quality='positronium', include_relativistic=True)
     
     # Try to use the specialized PositroniumSCF class if available
     try:
-        from antiverse.specialized.positronium import PositroniumSCF
+        from antinature.specialized.positronium import PositroniumSCF
         scf = PositroniumSCF(
             hamiltonian=matrices,
             basis_set=basis,
@@ -82,8 +82,8 @@ def positronium_workflow(basis_quality='positronium', include_relativistic=True)
         print("Using specialized positronium SCF solver")
     except ImportError:
         # Fall back to the generic SCF class
-        from antiverse.core.scf import antiverseSCF
-        scf = antiverseSCF(
+        from antinature.core.scf import antinatureSCF
+        scf = antinatureSCF(
             hamiltonian=matrices,
             basis_set=basis,
             molecular_data=positronium
@@ -194,7 +194,7 @@ def positronium_workflow(basis_quality='positronium', include_relativistic=True)
     
     # 7. Calculate annihilation properties
     print("Calculating annihilation properties...")
-    from antiverse.specialized.annihilation import AnnihilationOperator
+    from antinature.specialized.annihilation import AnnihilationOperator
     annihilation = AnnihilationOperator(
         basis_set=basis,
         wavefunction=scf_results

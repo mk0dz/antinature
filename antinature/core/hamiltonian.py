@@ -1,9 +1,9 @@
 import numpy as np
 from typing import List, Tuple, Dict, Optional, Union
 
-class antiverseHamiltonian:
+class AntinatureHamiltonian:
     """
-    Optimized Hamiltonian for antiverse molecular systems.
+    Optimized Hamiltonian for antinature molecular systems.
     """
     
     def __init__(self, 
@@ -13,7 +13,7 @@ class antiverseHamiltonian:
                  include_annihilation: bool = True,
                  include_relativistic: bool = False):
         """
-        Initialize an antiverse Hamiltonian.
+        Initialize an antinature Hamiltonian.
         
         Parameters:
         -----------
@@ -21,7 +21,7 @@ class antiverseHamiltonian:
             Molecular structure information
         basis_set : MixedMatterBasis
             Basis set for the calculation
-        integral_engine : antiverseIntegralEngine
+        integral_engine : antinatureIntegralEngine
             Engine for integral computation
         include_annihilation : bool
             Whether to include annihilation terms
@@ -371,7 +371,7 @@ class antiverseHamiltonian:
     
     def build_hamiltonian(self):
         """
-        Construct the complete Hamiltonian for the antiverse system.
+        Construct the complete Hamiltonian for the antinature system.
         """
         # 1. Build overlap matrix
         S = self.build_overlap_matrix()
