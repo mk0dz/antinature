@@ -24,25 +24,25 @@ from .core.scf import AntinatureSCF
 from .core.correlation import AntinatureCorrelation
 from .core.integral_engine import AntinatureIntegralEngine
 
-# Specialized components
-from .specialized.relativistic import RelativisticCorrection
-from .specialized.annihilation import AnnihilationOperator
-from .specialized.positronium import PositroniumSCF
-from .specialized.visualization import AntinatureVisualizer
+# # Specialized components
+# from .specialized.relativistic import RelativisticCorrection
+# from .specialized.annihilation import AnnihilationOperator
+# from .specialized.positronium import PositroniumSCF
+# from .specialized.visualization import AntinatureVisualizer
 
-# Utilities
-from .utils import create_antinature_calculation
+# # Utilities
+# from .utils import create_antinature_calculation
 
-# Attempt to import optional quantum components
-try:
-    from .qiskit_integration import (
-        AntinatureQuantumSolver,
-        AntinatureQuantumSystems,
-        AntinatureVQESolver
-    )
-    HAS_QISKIT = True
-except ImportError:
-    HAS_QISKIT = False
+# # Attempt to import optional quantum components
+# try:
+#     from .qiskit_integration import (
+#         AntinatureQuantumSolver,
+#         AntinatureQuantumSystems,
+#         AntinatureVQESolver
+#     )
+#     HAS_QISKIT = True
+# except ImportError:
+#     HAS_QISKIT = False
 
 
 

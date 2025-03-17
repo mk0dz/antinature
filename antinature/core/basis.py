@@ -3,63 +3,156 @@
 import numpy as np
 from typing import List, Tuple, Optional, Dict
 
+# antinature/core/basis.py
+
+import numpy as np
+from typing import List, Tuple, Optional, Dict
+import math
+
 class GaussianBasisFunction:
-    """Optimized Gaussian basis function implementation."""
+    """
+    Gaussian basis function with comprehensive support for arbitrary angular momentum.
+    
+    Represents a primitive Gaussian function of the form:
+    g(r) = N * (x-Rx)^a * (y-Ry)^b * (z-Rz)^c * exp(-alpha * |r-R|^2)
+    
+    Where N is the normalization constant, (a,b,c) are the angular momentum components,
+    alpha is the exponent, and R is the center coordinates.
+    """
     
     def __init__(self, 
                  center: np.ndarray, 
                  exponent: float, 
                  angular_momentum: Tuple[int, int, int] = (0, 0, 0),
                  normalization: Optional[float] = None):
-        self.center = center
-        self.exponent = exponent
-        self.angular_momentum = angular_momentum
+        """
+        Initialize a Gaussian basis function.
         
-        # Calculate normalization immediately if not provided
-        self.normalization = normalization or self._calculate_normalization()
+        Parameters:
+        -----------
+        center : np.ndarray
+            Coordinates of the center (3D vector)
+        exponent : float
+            Gaussian exponent (alpha)
+        angular_momentum : Tuple[int, int, int]
+            Angular momentum components (a,b,c) for x,y,z
+        normalization : float, optional
+            Normalization constant (computed if not provided)
+        """
+        self.center = np.asarray(center)
+        self.exponent = float(exponent)
+        self.angular_momentum = tuple(angular_momentum)
+        
+        # Calculate normalization if not provided
+        self.normalization = normalization if normalization is not None else self.calculate_normalization()
         
         # Cache common calculations
-        self.alpha = exponent
-        self.nx, self.ny, self.nz = angular_momentum
-        
-        # Pre-compute coefficient for polynomial part
-        self.poly_coef = 1.0
+        self.alpha = self.exponent
+        self.nx, self.ny, self.nz = self.angular_momentum
     
-    def _calculate_normalization(self) -> float:
-        """Efficient normalization calculation with caching."""
-        # Implementation with optimized calculation
+    def calculate_normalization(self) -> float:
+        """
+        Calculate the normalization constant for the Gaussian basis function.
+        
+        Returns:
+        --------
+        float
+            Normalization constant
+        """
         alpha = self.exponent
         nx, ny, nz = self.angular_momentum
         
-        # Use vectorized operations where possible
+        # Prefactor from the Gaussian part
         prefactor = (2 * alpha / np.pi) ** 0.75
         
-        # Optimized normalization for angular momentum components
-        def double_factorial(n):
-            if n <= 0: return 1.0
-            return np.prod(np.arange(n, 0, -2, dtype=float))
+        # Normalization for each angular momentum component
+        def norm_component(n):
+            if n == 0:
+                return 1.0
+            else:
+                # Use double factorial (1*3*5*...) for normalization
+                double_fact = 1.0
+                for i in range(1, 2*n, 2):
+                    double_fact *= i
+                return math.sqrt((4 * alpha) ** n / double_fact)
         
-        x_norm = (4 * alpha) ** (nx / 2) / np.sqrt(double_factorial(2 * nx - 1)) if nx > 0 else 1.0
-        y_norm = (4 * alpha) ** (ny / 2) / np.sqrt(double_factorial(2 * ny - 1)) if ny > 0 else 1.0
-        z_norm = (4 * alpha) ** (nz / 2) / np.sqrt(double_factorial(2 * nz - 1)) if nz > 0 else 1.0
+        nx_norm = norm_component(nx)
+        ny_norm = norm_component(ny)
+        nz_norm = norm_component(nz)
         
-        return prefactor * x_norm * y_norm * z_norm
+        return prefactor * nx_norm * ny_norm * nz_norm
     
     def evaluate(self, r: np.ndarray) -> float:
         """
-        Evaluate the basis function at position r with optimized calculation.
+        Evaluate the basis function at position r.
+        
+        Parameters:
+        -----------
+        r : np.ndarray
+            Position vector (3D)
+            
+        Returns:
+        --------
+        float
+            Value of the basis function at position r
         """
-        # Vectorized displacement calculation
+        # Ensure r is a numpy array
+        r = np.asarray(r)
+        
+        # Vector from center to position r
         dr = r - self.center
         
-        # Efficient polynomial calculation
-        polynomial = dr[0]**self.nx * dr[1]**self.ny * dr[2]**self.nz if any(self.angular_momentum) else 1.0
+        # Compute polynomial part (x-Rx)^a * (y-Ry)^b * (z-Rz)^c
+        polynomial = 1.0
+        if self.nx > 0:
+            polynomial *= dr[0] ** self.nx
+        if self.ny > 0:
+            polynomial *= dr[1] ** self.ny
+        if self.nz > 0:
+            polynomial *= dr[2] ** self.nz
         
-        # Fast exponential calculation
+        # Compute exponential part exp(-alpha * |r-R|^2)
         r_squared = np.sum(dr**2)
         exponential = np.exp(-self.alpha * r_squared)
         
+        # Combine all parts
         return self.normalization * polynomial * exponential
+    
+    def get_angular_momentum_sum(self) -> int:
+        """
+        Get the total angular momentum (L = a + b + c).
+        
+        Returns:
+        --------
+        int
+            Sum of angular momentum components
+        """
+        return self.nx + self.ny + self.nz
+    
+    def get_type(self) -> str:
+        """
+        Get the orbital type (s, p, d, etc.) based on angular momentum.
+        
+        Returns:
+        --------
+        str
+            Orbital type label
+        """
+        L = self.get_angular_momentum_sum()
+        types = {0: 's', 1: 'p', 2: 'd', 3: 'f', 4: 'g', 5: 'h'}
+        return types.get(L, f"L={L}")
+    
+    def __str__(self) -> str:
+        """String representation of the basis function."""
+        return (f"{self.get_type()}-type Gaussian at {self.center}, "
+                f"α={self.exponent:.4f}, L={self.angular_momentum}")
+    
+    def __repr__(self) -> str:
+        """Detailed representation for debugging."""
+        return (f"GaussianBasisFunction(center={self.center}, "
+                f"exponent={self.exponent}, "
+                f"angular_momentum={self.angular_momentum}, "
+                f"normalization={self.normalization:.8e})")
 
 
 class BasisSet:
