@@ -5,30 +5,30 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="antinature",
-    version="0.1.0",
+    version="0.1.1",  # Increment version since you're making changes
     packages=find_packages(),
-    py_modules=['antinature', 'antinature'],
+    py_modules=['antinature'],  # Removed duplicate 'antinature'
     install_requires=[
-        "numpy>=1.20.0",
-        "scipy>=1.5.2,<2.0.0",
-        "matplotlib>=3.4.0",
-        "typing-extensions>=4.0.0",
+        "numpy>=1.20.0,<3.0.0",      # Wider range, avoiding breaking changes
+        "scipy>=1.5.2,<3.0.0",       # Relaxed upper bound
+        "matplotlib>=3.4.0,<4.0.0",  # More flexible but still stable
+        "typing-extensions>=4.0.0,<5.0.0",  # Added upper bound for safety
     ],
     extras_require={
         "qiskit": [
-            "qiskit>=1.0.0",
-            "qiskit-algorithms>=0.3.0",
-            "qiskit-nature>=0.7.0",
+            "qiskit>=1.0.0,<2.0.0",          # Added upper bound
+            "qiskit-algorithms>=0.3.0,<1.0.0",
+            "qiskit-nature>=0.7.0,<1.0.0",
         ],
         "dev": [
-            "pytest>=7.0.0",
-            "pytest-cov>=4.0.0",
-            "black>=23.0.0",
-            "isort>=5.12.0",
+            "pytest>=7.0.0,<9.0.0",
+            "pytest-cov>=4.0.0,<6.0.0",
+            "black>=23.0.0,<25.0.0",
+            "isort>=5.12.0,<7.0.0",
         ],
     },
     author="mk0dz",
-    author_email="Mukulpal108@hotmail.com",  # Update with your email
+    author_email="Mukulpal108@hotmail.com",
     description="Quantum chemistry package for antimatter simulations",
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -42,6 +42,7 @@ setup(
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",  # Added 3.11 support
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
         "Intended Audience :: Science/Research",
@@ -49,5 +50,5 @@ setup(
         "Topic :: Scientific/Engineering :: Physics",
         "Development Status :: 4 - Beta",
     ],
-    python_requires=">=3.8",
-) 
+    python_requires=">=3.8,<3.12",  # Specified upper bound for Python version
+)

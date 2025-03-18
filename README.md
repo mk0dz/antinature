@@ -70,7 +70,7 @@ If you use this package in your research, please cite:
   author = {mk0dz},
   title = {antinature Quantum Chemistry},
   url = {https://github.com/mk0dz/antinature},
-  version = {0.1.0},
+  version = {0.1.1},
   year = {2023},
 }
 ```
