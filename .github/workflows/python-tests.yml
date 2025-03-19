@@ -12,8 +12,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
-
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+    
     steps:
     - uses: actions/checkout@v4
     - name: Set up Python ${{ matrix.python-version }}
@@ -24,9 +24,46 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        # Install the package with all dependencies (dev + qiskit)
+        
+        # Install different dependencies based on Python version
+        if [ "${{ matrix.python-version }}" == "3.8" ]; then
+          # For Python 3.8, install specific versions known to work
+          python -m pip install -e .[dev]
+          python -m pip install qiskit==0.42.0 qiskit-nature==0.6.2 qiskit-aer==0.11.2
+        else
+          # For other Python versions, install all dependencies
+          python -m pip install -e .[all]
+          python -m pip install qiskit qiskit-algorithms qiskit-nature qiskit-aer
+        fi
+    
+    - name: Test with pytest
+      run: |
+        # Run tests with verbose output for debugging
+        pytest -v --cov=antinature
+    
+    - name: Check package build
+      run: |
+        python -m pip install build
+        python -m build
+        python -m pip install dist/*.whl
+        python -c "import antinature; print(antinature.__version__)"
+
+  # Separate job for experimental Python version
+  test-experimental:
+    runs-on: ubuntu-latest
+    continue-on-error: true  # Allow this job to fail without failing the workflow
+    
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python 3.13
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.13"
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
         python -m pip install -e .[all]
-        # Also explicitly install qiskit packages to ensure they're available
         python -m pip install qiskit qiskit-algorithms qiskit-nature qiskit-aer
     
     - name: Test with pytest
