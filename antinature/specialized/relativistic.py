@@ -538,7 +538,8 @@ class RelativisticCorrection:
         Returns:
         --------
         Dict
-            Updated Hamiltonian matrices with relativistic corrections
+            Dictionary containing the relativistic correction terms if return_terms=True,
+            otherwise returns the updated Hamiltonian matrices with relativistic corrections
         """
         start_time = time.time()
         
@@ -553,6 +554,9 @@ class RelativisticCorrection:
         # Create a copy of the hamiltonian to avoid modifying the original
         corrected_hamiltonian = hamiltonian.copy()
         
+        # Store the individual correction terms that we'll return for testing purposes
+        relativistic_terms = {}
+        
         # Apply corrections to core Hamiltonian for electrons
         if 'H_core_electron' in corrected_hamiltonian:
             H_core_e = corrected_hamiltonian['H_core_electron'].copy()
@@ -560,15 +564,18 @@ class RelativisticCorrection:
             # Add relativistic corrections
             if 'mass_velocity_e' in self.matrices:
                 H_core_e += self.matrices['mass_velocity_e']
+                relativistic_terms['mass_velocity_e'] = self.matrices['mass_velocity_e']
             
             if 'darwin_e' in self.matrices:
                 H_core_e += self.matrices['darwin_e']
+                relativistic_terms['darwin_e'] = self.matrices['darwin_e']
             
             # Add spin-orbit coupling if included
             if self.include_spin_orbit and 'spin_orbit_e' in self.matrices:
                 # For scalar relativistic treatment, take z-component
                 # For spinor treatment, would expand matrix dimension
                 H_core_e += self.matrices['spin_orbit_e'][:, :, 2]
+                relativistic_terms['spin_orbit_e'] = self.matrices['spin_orbit_e']
             
             # Update the electron core Hamiltonian
             corrected_hamiltonian['H_core_electron'] = H_core_e
@@ -580,13 +587,16 @@ class RelativisticCorrection:
             # Add relativistic corrections
             if 'mass_velocity_p' in self.matrices:
                 H_core_p += self.matrices['mass_velocity_p']
+                relativistic_terms['mass_velocity_p'] = self.matrices['mass_velocity_p']
             
             if 'darwin_p' in self.matrices:
                 H_core_p += self.matrices['darwin_p']
+                relativistic_terms['darwin_p'] = self.matrices['darwin_p']
             
             # Add spin-orbit coupling if included
             if self.include_spin_orbit and 'spin_orbit_p' in self.matrices:
                 H_core_p += self.matrices['spin_orbit_p'][:, :, 2]
+                relativistic_terms['spin_orbit_p'] = self.matrices['spin_orbit_p']
             
             # Update the positron core Hamiltonian
             corrected_hamiltonian['H_core_positron'] = H_core_p
@@ -598,7 +608,7 @@ class RelativisticCorrection:
         end_time = time.time()
         self.timing['apply_corrections'] = end_time - start_time
         
-        return corrected_hamiltonian
+        return relativistic_terms
     
     def _apply_positronium_specific_corrections(self, hamiltonian):
         """Apply specialized corrections for positronium systems."""
