@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="antinature",
-    version="0.1.1",  # Increment version since you're making changes
+    version="0.1.0",  # Increment version since you're making changes
     packages=find_packages(),
     py_modules=['antinature'],  # Removed duplicate 'antinature'
     install_requires=[
@@ -27,7 +27,7 @@ setup(
             "isort>=5.12.0,<7.0.0",
         ],
     },
-    author="mk0dz",
+    author="Mukul Kumar",
     author_email="Mukulpal108@hotmail.com",
     description="Quantum chemistry package for antimatter simulations",
     long_description=long_description,

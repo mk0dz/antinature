@@ -9,7 +9,7 @@ The package includes specialized algorithms for positrons and positron-electron
 interactions, relativistic corrections, and electron-positron annihilation processes.
 """
 
-__version__ = "0.1.1"
+__version__ = "0.1.0"
 
 # Core components
 from .core.basis import (
@@ -33,16 +33,16 @@ from .specialized.visualization import AntinatureVisualizer
 # Utilities
 from .utils import create_antinature_calculation
 
-# # Attempt to import optional quantum components
-# try:
-#     from .qiskit_integration import (
-#         AntinatureQuantumSolver,
-#         AntinatureQuantumSystems,
-#         AntinatureVQESolver
-#     )
-#     HAS_QISKIT = True
-# except ImportError:
-#     HAS_QISKIT = False
+# Optional quantum components
+try:
+    from .qiskit_integration import (
+        AntinatureQuantumSolver,
+        AntinatureQuantumSystems,
+        AntinatureVQESolver
+    )
+    HAS_QISKIT = True
+except ImportError:
+    HAS_QISKIT = False
 
 
 

@@ -57,9 +57,10 @@ print(f"Lifetime: {result['lifetime_ns']:.4f} ns")
 
 The package includes several example scripts for common antinature research scenarios:
 
-- `examples/positronium_simulation.py`: Basic positronium energy calculation
-- `examples/quantum_antinature.py`: Quantum computing simulation of positronium
-- `examples/anti_hydrogen.py`: Anti-hydrogen atom calculations
+- `examples/positronium_example.py`: Basic positronium energy calculation
+- `examples/complex_molecule.py`: Multi-particle antimatter system simulations
+- `examples/anti_heh.py`: Anti-hydrogen-helium molecule calculations
+- `examples/lih_ion.py`: Lithium hydride ion with positron calculations
 
 ## Citing This Work
 
@@ -67,11 +68,11 @@ If you use this package in your research, please cite:
 
 ```
 @software{antinature,
-  author = {mk0dz},
-  title = {antinature Quantum Chemistry},
+  author = {Mukul},
+  title = {Antimatter Quantum Chemistry},
   url = {https://github.com/mk0dz/antinature},
   version = {0.1.0},
-  year = {2023},
+  year = {2025},
 }
 ```
 
@@ -82,3 +83,5 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines on how to set up a development environment and contribute to this project.

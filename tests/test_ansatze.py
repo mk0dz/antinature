@@ -5,6 +5,7 @@ This script tests the functionality of both solver.py and ansatze.py.
 
 import sys
 import os
+import logging
 
 # Add parent directory to path if running from this script's directory
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -56,10 +57,11 @@ except ImportError as e:
     HAS_REQUIRED_MODULES = False
 
 # Check for Qiskit
+logger = logging.getLogger(__name__)
+
 try:
-    print("Attempting to import qiskit...")
     import qiskit
-    print(f"Qiskit imported from: {qiskit.__file__}")
+    logger.debug(f"Qiskit imported from: {qiskit.__file__}")
     
     # Import QuantumCircuit - should be available in all Qiskit versions
     from qiskit import QuantumCircuit
@@ -68,30 +70,26 @@ try:
     # Try to import Aer - in newer versions it's a separate package
     try:
         from qiskit import Aer
-        print("Successfully imported Aer from qiskit")
     except ImportError:
         # Try to import from qiskit_aer package
         try:
             import qiskit_aer
             from qiskit_aer import Aer
-            print(f"Successfully imported Aer from qiskit_aer (version {qiskit_aer.__version__})")
-        except ImportError as ae:
-            print(f"Warning: Aer not available: {ae}")
-            # We can continue without Aer for basic tests
+            logger.debug(f"Using Aer from qiskit_aer (version {qiskit_aer.__version__})")
+        except ImportError:
+            logger.warning("Aer not available, some tests will be skipped")
     
     # Try to import visualization
     try:
         from qiskit.visualization import plot_histogram
-        print("Successfully imported plot_histogram")
-    except ImportError as ve:
-        print(f"Warning: Visualization module not available: {ve}")
-        # We can continue without visualization for basic tests
+    except ImportError:
+        logger.debug("Visualization module not available, some tests will be skipped")
     
     HAS_QISKIT = True
-    print(f"Qiskit version: {qiskit.__version__}")
+    logger.debug(f"Qiskit version: {qiskit.__version__}")
 except ImportError as e:
     HAS_QISKIT = False
-    print(f"Error importing Qiskit: {e}")
+    logger.warning(f"Qiskit not available: {e}")
     print("Qiskit not available.")
 
 def test_positronium_circuit():
