@@ -37,8 +37,8 @@ jobs:
       id-token: write  # Required for trusted publishing
 
     environment:
-      name: workflow
-      url: https://test.pypi.org/project/antinature/  # Update with your project name
+      name: pypi
+      url: https://pypi.org/project/antinature/  # Update with your project name
 
     steps:
       - name: Retrieve release distributions

@@ -16,11 +16,23 @@ setup(
     ],
     extras_require={
         "qiskit": [
-            "qiskit>=1.0.0,<2.0.0",          # Added upper bound
+            "qiskit>=1.0.0,<2.0.0",
             "qiskit-algorithms>=0.3.0,<1.0.0",
             "qiskit-nature>=0.7.0,<1.0.0",
+            "qiskit-aer>=0.11.0,<1.0.0",
         ],
         "dev": [
+            "pytest>=7.0.0,<9.0.0",
+            "pytest-cov>=4.0.0,<6.0.0",
+            "black>=23.0.0,<25.0.0",
+            "isort>=5.12.0,<7.0.0",
+        ],
+        # Allow installing both dev and qiskit extras together
+        "all": [
+            "qiskit>=1.0.0,<2.0.0",
+            "qiskit-algorithms>=0.3.0,<1.0.0",
+            "qiskit-nature>=0.7.0,<1.0.0",
+            "qiskit-aer>=0.11.0,<1.0.0",
             "pytest>=7.0.0,<9.0.0",
             "pytest-cov>=4.0.0,<6.0.0",
             "black>=23.0.0,<25.0.0",
@@ -52,5 +64,5 @@ setup(
         "Topic :: Scientific/Engineering :: Physics",
         "Development Status :: 4 - Beta",
     ],
-    python_requires=">=3.8,<3.12",  # Specified upper bound for Python version
+    python_requires=">=3.8,<3.14",  # Updated upper bound for Python version
 )

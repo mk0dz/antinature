@@ -27,6 +27,43 @@ pip install antinature
 pip install antinature[qiskit]
 ```
 
+### Development Installation
+
+For development purposes with testing tools:
+
+```bash
+# Clone the repository
+git clone https://github.com/mk0dz/antinature.git
+cd antinature
+
+# Install in development mode with all dependencies
+pip install -e .[all]
+
+# Run tests
+pytest
+```
+
+### Dependencies
+
+The package has the following optional dependency groups:
+
+- `qiskit`: Required for quantum computing features (Qiskit, Qiskit-Nature, Qiskit-Aer)
+- `dev`: Development tools (pytest, black, isort)
+- `all`: Installs all optional dependencies
+
+If you encounter any test failures related to missing dependencies, please ensure you've installed the appropriate dependency group:
+
+```bash
+# For quantum computing features
+pip install -e .[qiskit]
+
+# For development tools
+pip install -e .[dev]
+
+# For all dependencies
+pip install -e .[all]
+```
+
 ## Quick Start
 
 ```python

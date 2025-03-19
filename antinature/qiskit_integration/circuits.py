@@ -5,17 +5,43 @@ from typing import Dict, List, Optional, Union, Tuple, Any, Callable
 import time
 import random
 
-# Check Qiskit availability
+# Check Qiskit availability with more robust error handling
+HAS_QISKIT = False  # Default to False
+
 try:
+    # Core imports
     from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister
     from qiskit.circuit import Parameter, ParameterVector
     from qiskit.circuit.library import EfficientSU2, TwoLocal, NLocal, RealAmplitudes
     from qiskit.transpiler import PassManager
-    from qiskit.transpiler.passes import Unroll3qOrMore, UnrollCustomDefinitions, Unroller, Optimize1qGates, CXCancellation
+    
+    # Try importing transpiler passes with error handling for each import
+    transpiler_imports_successful = True
+    try:
+        from qiskit.transpiler.passes import Unroll3qOrMore, UnrollCustomDefinitions
+    except ImportError:
+        transpiler_imports_successful = False
+        print("Warning: Some transpiler passes (Unroll3qOrMore, UnrollCustomDefinitions) not available.")
+    
+    try:
+        from qiskit.transpiler.passes import Unroller
+    except ImportError:
+        # This pass might have been deprecated or moved in newer Qiskit versions
+        print("Warning: Unroller pass not available in this Qiskit version. Using alternatives.")
+    
+    try:
+        from qiskit.transpiler.passes import Optimize1qGates, CXCancellation
+    except ImportError:
+        transpiler_imports_successful = False
+        print("Warning: Some gate optimization passes not available.")
+    
+    # If all core imports succeeded, set HAS_QISKIT to True
     HAS_QISKIT = True
-except ImportError:
+    print("Qiskit successfully imported.")
+    
+except ImportError as e:
+    print(f"Warning: Qiskit not available: {str(e)}. Functionality limited.")
     HAS_QISKIT = False
-    print("Warning: Qiskit not available. Functionality limited.")
 
 class AntinatureCircuits:
     """
@@ -88,9 +114,26 @@ class AntinatureCircuits:
         # Add optimization passes based on level
         if self.optimization_level >= 1:
             # Basic optimization - unroll custom gates
-            from qiskit.circuit.equivalence_library import EquivalenceLibrary
-            eq_lib = EquivalenceLibrary()
-            self.pass_manager.append(UnrollCustomDefinitions(equivalence_library=eq_lib))
+            try:
+                from qiskit.circuit.equivalence_library import EquivalenceLibrary
+                eq_lib = EquivalenceLibrary()
+                
+                # Try to add optimization passes based on availability
+                try:
+                    self.pass_manager.append(UnrollCustomDefinitions(equivalence_library=eq_lib))
+                except (NameError, ImportError):
+                    print("Warning: UnrollCustomDefinitions pass not available. Skipping this optimization.")
+                
+                # Try to add Optimize1qGates and CXCancellation if available
+                try:
+                    self.pass_manager.append(Optimize1qGates())
+                    self.pass_manager.append(CXCancellation())
+                    print("Added gate optimization passes to transpiler.")
+                except (NameError, ImportError):
+                    print("Warning: Gate optimization passes not available. Skipping these optimizations.")
+                
+            except ImportError as e:
+                print(f"Warning: Could not set up transpiler passes: {str(e)}")
         
         # For hardware-aware optimization, additional setup would be needed
         if self.hardware_aware and self.backend is not None:
@@ -635,12 +678,11 @@ class AntinatureCircuits:
 
 class PositroniumCircuit:
     """
-    Specialized quantum circuit class for positronium simulation.
+    Specialized circuit generator for positronium simulations.
     
-    This class provides optimized circuits for simulating positronium
-    systems, including ground state preparation, annihilation detection,
-    and variational ansätze specifically designed for positronium's
-    unique electron-positron correlations.
+    This class provides methods to create specialized quantum circuits 
+    for positronium simulations, including different states and 
+    transition circuits.
     """
     
     def __init__(self, 
@@ -662,13 +704,15 @@ class PositroniumCircuit:
         optimization_level : int
             Level of circuit optimization (0-3)
         """
+        # We've already validated HAS_QISKIT in the imports section
+        # This check is redundant but kept for safety
         if not HAS_QISKIT:
             raise ImportError("Qiskit is required for this functionality")
         
         self.n_electron_orbitals = n_electron_orbitals
         self.n_positron_orbitals = n_positron_orbitals
         
-        # For positronium representation
+        # For positronium with Jordan-Wigner mapping
         self.n_electron_qubits = n_electron_orbitals
         self.n_positron_qubits = n_positron_orbitals
         self.n_total_qubits = self.n_electron_qubits + self.n_positron_qubits
