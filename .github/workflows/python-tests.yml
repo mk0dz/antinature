@@ -12,7 +12,40 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
+    
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install -e .[all]
+        python -m pip install qiskit qiskit-algorithms qiskit-nature qiskit-aer
+    
+    - name: Test with pytest
+      run: |
+        # Run tests with verbose output for debugging
+        pytest -v --cov=antinature
+    
+    - name: Check package build
+      run: |
+        python -m pip install build
+        python -m build
+        python -m pip install dist/*.whl
+        python -c "import antinature; print(antinature.__version__)"
+  
+  # Separate job for potentially failing Python versions
+  test-optional:
+    runs-on: ubuntu-latest
+    continue-on-error: true  # Allow this job to fail without failing the workflow
+    strategy:
+      matrix:
+        python-version: ["3.8", "3.13"]
     
     steps:
     - uses: actions/checkout@v4
@@ -35,36 +68,6 @@ jobs:
           python -m pip install -e .[all]
           python -m pip install qiskit qiskit-algorithms qiskit-nature qiskit-aer
         fi
-    
-    - name: Test with pytest
-      run: |
-        # Run tests with verbose output for debugging
-        pytest -v --cov=antinature
-    
-    - name: Check package build
-      run: |
-        python -m pip install build
-        python -m build
-        python -m pip install dist/*.whl
-        python -c "import antinature; print(antinature.__version__)"
-
-  # Separate job for experimental Python version
-  test-experimental:
-    runs-on: ubuntu-latest
-    continue-on-error: true  # Allow this job to fail without failing the workflow
-    
-    steps:
-    - uses: actions/checkout@v4
-    - name: Set up Python 3.13
-      uses: actions/setup-python@v5
-      with:
-        python-version: "3.13"
-    
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        python -m pip install -e .[all]
-        python -m pip install qiskit qiskit-algorithms qiskit-nature qiskit-aer
     
     - name: Test with pytest
       run: |

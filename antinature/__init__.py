@@ -12,22 +12,17 @@ interactions, relativistic corrections, and electron-positron annihilation proce
 __version__ = "0.1.0"
 
 # Core components
-from .core.basis import (
-    GaussianBasisFunction, 
-    BasisSet, 
-    PositronBasis, 
-    MixedMatterBasis
-)
-from .core.molecular_data import MolecularData
-from .core.hamiltonian import AntinatureHamiltonian
-from .core.scf import AntinatureSCF
+from .core.basis import BasisSet, GaussianBasisFunction, MixedMatterBasis, PositronBasis
 from .core.correlation import AntinatureCorrelation
+from .core.hamiltonian import AntinatureHamiltonian
 from .core.integral_engine import AntinatureIntegralEngine
+from .core.molecular_data import MolecularData
+from .core.scf import AntinatureSCF
+from .specialized.annihilation import AnnihilationOperator
+from .specialized.positronium import PositroniumSCF
 
 # Specialized components
 from .specialized.relativistic import RelativisticCorrection
-from .specialized.annihilation import AnnihilationOperator
-from .specialized.positronium import PositroniumSCF
 from .specialized.visualization import AntinatureVisualizer
 
 # Utilities
@@ -38,11 +33,9 @@ try:
     from .qiskit_integration import (
         AntinatureQuantumSolver,
         AntinatureQuantumSystems,
-        AntinatureVQESolver
+        AntinatureVQESolver,
     )
+
     HAS_QISKIT = True
 except ImportError:
     HAS_QISKIT = False
-
-
-

@@ -10,22 +10,18 @@ This module includes the fundamental building blocks for antinature chemistry si
 - Integral calculation engines
 """
 
-import sys
 import os
+import sys
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 # Import basis components
-from .basis import (
-    GaussianBasisFunction, 
-    BasisSet, 
-    PositronBasis, 
-    MixedMatterBasis
-)
+from .basis import BasisSet, GaussianBasisFunction, MixedMatterBasis, PositronBasis
+from .correlation import AntinatureCorrelation
+from .hamiltonian import AntinatureHamiltonian
+from .integral_engine import AntinatureIntegralEngine
 
 # Import core computational components
 from .molecular_data import MolecularData
-from .hamiltonian import AntinatureHamiltonian
 from .scf import AntinatureSCF
-from .correlation import AntinatureCorrelation
-from .integral_engine import AntinatureIntegralEngine
+
 # Add imports for other modules when they're created

@@ -6,6 +6,6 @@ including annihilation operators and relativistic corrections.
 """
 
 from .annihilation import AnnihilationOperator
-from .relativistic import RelativisticCorrection
-from .visualization import visualize_annihilation_density, plot_wavefunction
 from .positronium import PositroniumSCF
+from .relativistic import RelativisticCorrection
+from .visualization import plot_wavefunction, visualize_annihilation_density

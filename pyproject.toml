@@ -66,6 +66,8 @@ all = [
 line-length = 88
 target-version = ['py38', 'py39', 'py310']
 include = '\.pyi?$'
+skip-string-normalization = true
+preview = true
 
 [tool.isort]
 profile = "black"
