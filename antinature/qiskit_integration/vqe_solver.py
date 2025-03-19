@@ -12,7 +12,7 @@ try:
         COBYLA, SPSA, L_BFGS_B, SLSQP, ADAM, AQGD,
         NFT, GSLS, GradientDescent, P_BFGS, TNC
     )
-    from qiskit.primitives import Estimator, BackendEstimator
+    from qiskit.primitives import Estimator, BackendEstimator, StatevectorEstimator
     from qiskit import QuantumCircuit
     from qiskit.circuit import Parameter, ParameterVector
     from qiskit.providers import Backend
@@ -129,7 +129,16 @@ class AntinatureVQESolver:
         """Initialize the appropriate estimator based on backend and settings."""
         if self.backend is None:
             # Use statevector simulation
-            self.estimator = Estimator()
+            try:
+                # Try to use the modern StatevectorEstimator (Qiskit 1.0+)
+                from qiskit.primitives import StatevectorEstimator
+                self.estimator = StatevectorEstimator()
+                print("Using modern StatevectorEstimator")
+            except ImportError:
+                # Fall back to legacy Estimator
+                self.estimator = Estimator()
+                print("Using legacy Estimator (deprecated)")
+            
             self.simulation_type = 'statevector'
             print("Using statevector simulation")
         else:

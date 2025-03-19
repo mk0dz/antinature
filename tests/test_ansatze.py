@@ -118,10 +118,12 @@ def test_positronium_circuit():
             circuit_alt = create_positronium_circuit(reps=3)
             print(f"Alternative circuit - depth: {circuit_alt.depth()}")
         
-        return True
+        # Use assertions instead of returning True
+        assert circuit.num_qubits > 0, "Circuit should have at least 1 qubit"
+        assert circuit.depth() > 0, "Circuit should have non-zero depth"
     except Exception as e:
         print(f"Error creating positronium circuit: {e}")
-        return False
+        assert False, f"Test failed with error: {e}"
 
 def test_ansatze():
     """Test the creation of different ansatze."""
@@ -153,10 +155,13 @@ def test_ansatze():
             # Create an alternative test
             print("Using direct method instead of factory method")
         
-        return True
+        # Use assertions instead of returning True
+        assert pos_circuit.num_qubits > 0, "Positronium ansatz should have at least 1 qubit"
+        assert ah_circuit.num_qubits > 0, "Anti-hydrogen ansatz should have at least 1 qubit"
+        assert ps2_circuit.num_qubits > 0, "Positronium molecule ansatz should have at least 1 qubit"
     except Exception as e:
         print(f"Error testing ansatze: {e}")
-        return False
+        assert False, f"Test failed with error: {e}"
 
 def test_vqe_simulation(run_simulation=False):
     """Test VQE simulation with the positronium solver."""
@@ -186,15 +191,20 @@ def test_vqe_simulation(run_simulation=False):
                 print(f"VQE energy: {results.get('vqe_energy', 'N/A')}")
                 print(f"Theoretical energy: {results.get('theoretical_energy', 'N/A')}")
                 print(f"Error: {results.get('vqe_error', 'N/A')}")
+                
+                # Assert on results if simulation was run
+                assert 'vqe_energy' in results, "VQE results should contain energy value"
             except Exception as e:
                 print(f"Error in VQE simulation: {e}")
+                assert False, f"VQE simulation failed with error: {e}"
         else:
             print("Skipping actual VQE simulation (set run_simulation=True to run)")
         
-        return True
+        # Basic assertion to validate solver creation
+        assert solver is not None, "Solver should be successfully created"
     except Exception as e:
         print(f"Error testing VQE solver: {e}")
-        return False
+        assert False, f"Test failed with error: {e}"
 
 def run_all_tests():
     """Run all tests."""

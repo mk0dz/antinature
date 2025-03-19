@@ -2,6 +2,8 @@
 
 import numpy as np
 from typing import Dict, List, Optional, Union, Tuple, Any, Callable
+import time
+import random
 
 # Check Qiskit availability
 try:
@@ -9,7 +11,7 @@ try:
     from qiskit.circuit import Parameter, ParameterVector
     from qiskit.circuit.library import EfficientSU2, TwoLocal, NLocal, RealAmplitudes
     from qiskit.transpiler import PassManager
-    from qiskit.transpiler.passes import Unroll3qOrMore, UnrollCustomDefinitions
+    from qiskit.transpiler.passes import Unroll3qOrMore, UnrollCustomDefinitions, Unroller, Optimize1qGates, CXCancellation
     HAS_QISKIT = True
 except ImportError:
     HAS_QISKIT = False
@@ -140,35 +142,28 @@ class AntinatureCircuits:
                                 initial_state: str = 'zero',
                                 name: Optional[str] = None) -> QuantumCircuit:
         """
-        Create a parameterized ansatz optimized for antinature systems.
+        Create a quantum circuit ansatz for antimatter simulations.
         
         Parameters:
         -----------
         reps : int
-            Number of repetitions in the ansatz
+            Number of repetitions of the circuit blocks
         entanglement : str
-            Entanglement strategy ('linear', 'full', 'circular', 'sca')
+            Type of entanglement to use ('full', 'linear', 'circular')
         rotation_blocks : str
-            Type of rotation gates ('x', 'y', 'z', 'xy', 'xz', 'yz', 'xyz')
+            Type of rotation gates to use ('xyz', 'xy', 'x', etc.)
         initial_state : str
-            Initial state ('zero', 'uniform', 'random')
+            Initial state ('zero', 'plus', 'random')
         name : str, optional
-            Name for the circuit
+            Circuit name
             
         Returns:
         --------
         QuantumCircuit
             Parameterized quantum circuit
         """
-        # Cache key for reusing circuits
-        cache_key = (reps, entanglement, rotation_blocks, initial_state, name)
-        if cache_key in self._circuit_cache:
-            return self._circuit_cache[cache_key].copy()
-        
-        # Create registers
+        # Create registers for the circuit
         registers = self.create_registers()
-        
-        # Create base circuit with all qubits
         qubits = []
         cregs = []
         
@@ -182,10 +177,31 @@ class AntinatureCircuits:
             cregs.extend(registers['p_meas'])
         
         # Create circuit
-        if len(cregs) > 0:
-            circuit = QuantumCircuit(*qubits, *cregs, name=name)
-        else:
-            circuit = QuantumCircuit(*qubits, name=name)
+        try:
+            # In newer Qiskit versions we need to create the circuit with registers, not individual qubits
+            e_reg = QuantumRegister(len(registers['e_reg']), 'e')
+            p_reg = QuantumRegister(len(registers['p_reg']), 'p')
+            
+            if len(cregs) > 0:
+                e_meas = ClassicalRegister(len(registers['e_meas']), 'ce')
+                p_meas = ClassicalRegister(len(registers['p_meas']), 'cp')
+                circuit = QuantumCircuit(e_reg, p_reg, e_meas, p_meas, name=name)
+            else:
+                circuit = QuantumCircuit(e_reg, p_reg, name=name)
+                
+            # Update the register references to use the new ones
+            registers['e_reg'] = [e_reg[i] for i in range(len(e_reg))]
+            registers['p_reg'] = [p_reg[i] for i in range(len(p_reg))]
+        except Exception as e:
+            print(f"Error creating circuit with registers: {e}")
+            # Fallback to legacy approach
+            if len(cregs) > 0:
+                circuit = QuantumCircuit(registers['e_reg'][0].register, registers['p_reg'][0].register, 
+                                        registers['e_meas'][0].register, registers['p_meas'][0].register, 
+                                        name=name)
+            else:
+                circuit = QuantumCircuit(registers['e_reg'][0].register, registers['p_reg'][0].register, 
+                                        name=name)
         
         # Initialize the state
         self._initialize_state(circuit, initial_state)
@@ -223,7 +239,7 @@ class AntinatureCircuits:
             circuit = self.pass_manager.run(circuit)
         
         # Cache the circuit for future use
-        self._circuit_cache[cache_key] = circuit.copy()
+        self._circuit_cache[name] = circuit.copy()
         
         return circuit
     

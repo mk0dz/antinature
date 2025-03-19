@@ -22,12 +22,21 @@ try:
         ALGORITHMS_IMPORT = "qiskit_algorithms"
     
     # Check for primitives
+    HAS_PRIMITIVES = False
     try:
         from qiskit.primitives import Estimator
+        print("Primitives (Estimator) available.")
         HAS_PRIMITIVES = True
     except ImportError:
-        HAS_PRIMITIVES = False
-        print("Warning: Qiskit primitives not available. Using legacy mode.")
+        try:
+            # Check for new location of Estimator in Qiskit 1.0+ or 2.0+
+            from qiskit.primitives import StatevectorEstimator
+            # Replace the old API with new one
+            Estimator = StatevectorEstimator
+            print("Using StatevectorEstimator as replacement for Estimator.")
+            HAS_PRIMITIVES = True
+        except ImportError:
+            print("Primitives not available. Using legacy VQE.")
     
     HAS_QISKIT = True
 except ImportError as e:
@@ -154,7 +163,15 @@ class PositroniumVQESolver:
         
         # Initialize estimator if primitives are available
         if HAS_PRIMITIVES:
-            self.estimator = Estimator()
+            try:
+                # Try to use the new StatevectorEstimator class if available
+                from qiskit.primitives import StatevectorEstimator
+                self.estimator = StatevectorEstimator()
+                print("Using modern StatevectorEstimator primitive")
+            except ImportError:
+                # Fall back to legacy Estimator if needed
+                self.estimator = Estimator()
+                print("Using legacy Estimator primitive")
         else:
             self.estimator = None
             print("Warning: Using legacy VQE without Estimator primitive")
