@@ -71,33 +71,24 @@ import numpy as np
 from antinature.core.molecular_data import MolecularData
 from antinature.utils import create_antinature_calculation
 
-# Create a positronium system (electron-positron bound state)
-positronium = MolecularData.positronium()
+anti_heh_data = MolecularData(
+        atoms=[
+            ('He', np.array([0.0, 0.0, 0.0])),
+            ('H', np.array([0.0, 0.0, 1.46]))  # ~1.46 Bohr ≈ 0.77 Å bond distance
+        ],
+        n_electrons=0,       # No electrons in antimatter system
+        n_positrons=2,       # 2 positrons (equivalent to 2 electrons in normal HeH+)
+        charge=0,            # Overall neutral (2 positrons balance -2 from anti-He, anti-H)
+        name="Anti-HeH+",
+        description="Anti-helium hydride ion (anti-HeH+) with exotic antimatter composition"
+    )
 
-# Configure and run the calculation
-result = create_antinature_calculation(
-    positronium,
-    basis_options={'quality': 'positronium'},
-    calculation_options={
-        'include_annihilation': True,
-        'include_relativistic': True
-    }
-)
-
-# Print key results
-print(f"Ground state energy: {result['energy']:.6f} Hartree")
-print(f"Annihilation rate: {result['annihilation_rate']:.6e} s^-1")
-print(f"Lifetime: {result['lifetime_ns']:.4f} ns")
+print(f"Molecule: {anti_heh_data.name}")
+print(f"Description: {anti_heh_data.description}")
+print(f"Formula: {anti_heh_data.get_formula()}")
+print(f"Number of positrons: {anti_heh_data.n_positrons}")
+print(f"Nuclear repulsion energy: {anti_heh_data.get_nuclear_repulsion_energy():.8f} Hartree")
 ```
-
-## Examples
-
-The package includes several example scripts for common antinature research scenarios:
-
-- `examples/positronium_example.py`: Basic positronium energy calculation
-- `examples/complex_molecule.py`: Multi-particle antimatter system simulations
-- `examples/anti_heh.py`: Anti-hydrogen-helium molecule calculations
-- `examples/lih_ion.py`: Lithium hydride ion with positron calculations
 
 ## Citing This Work
 
