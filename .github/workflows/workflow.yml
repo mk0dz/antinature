@@ -67,21 +67,53 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install bump2version==1.0.1 setuptools wheel
+          pip install setuptools wheel
 
       - name: Bump version
         id: bump_version
         run: |
-          # Get current version from setup.py or pyproject.toml
-          current_version=$(grep -Po '(?<=version="|version = ")[^"]*' $(find . -name "setup.py" -o -name "pyproject.toml" | head -1))
+          # Get current version from __init__.py
+          current_version=$(grep -Po '__version__ = "\K[^"]*' antinature/__init__.py)
           echo "Current version: $current_version"
           
-          # Bump version
-          bump2version --allow-dirty ${{ github.event.inputs.bump_type }}
+          # Split version into components
+          IFS='.' read -r -a version_parts <<< "$current_version"
+          major="${version_parts[0]}"
+          minor="${version_parts[1]}"
+          patch="${version_parts[2]}"
           
-          # Get new version
-          new_version=$(grep -Po '(?<=version="|version = ")[^"]*' $(find . -name "setup.py" -o -name "pyproject.toml" | head -1))
+          # Calculate new version based on bump type
+          case "${{ github.event.inputs.bump_type }}" in
+            patch)
+              new_patch=$((patch + 1))
+              new_version="$major.$minor.$new_patch"
+              ;;
+            minor)
+              new_minor=$((minor + 1))
+              new_version="$major.$new_minor.0"
+              ;;
+            major)
+              new_major=$((major + 1))
+              new_version="$new_major.0.0"
+              ;;
+          esac
+          
           echo "New version: $new_version"
+          
+          # Update version in __init__.py
+          sed -i "s/__version__ = \"$current_version\"/__version__ = \"$new_version\"/" antinature/__init__.py
+          
+          # Update version in pyproject.toml if it exists
+          if [ -f "pyproject.toml" ]; then
+            sed -i "s/version = \"$current_version\"/version = \"$new_version\"/" pyproject.toml
+          fi
+          
+          # Update version in setup.py if it exists
+          if [ -f "setup.py" ]; then
+            sed -i "s/version=\"$current_version\"/version=\"$new_version\"/" setup.py
+          fi
+          
+          # Output new version
           echo "new_version=$new_version" >> $GITHUB_OUTPUT
           
           # Configure git
