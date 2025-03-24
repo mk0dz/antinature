@@ -28,8 +28,6 @@ except ImportError:
     class FermionicOp:
         pass
 
-    print("Warning: Qiskit Nature not available. Quantum functionality limited.")
-
 
 class QiskitNatureAdapter:
     """
@@ -654,7 +652,6 @@ class PositroniumAdapter(QiskitNatureAdapter):
 
         for attraction in attraction_values:
             # Create Hamiltonian with this attraction strength
-            print(f"Creating Hamiltonian with attraction = {attraction}")
             _, operator = self.create_positronium_hamiltonian(
                 e_repulsion=0.0, p_repulsion=0.0, ep_attraction=attraction
             )

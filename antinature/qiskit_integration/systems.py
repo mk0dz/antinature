@@ -22,7 +22,6 @@ try:
     HAS_QISKIT = True
 except ImportError:
     HAS_QISKIT = False
-    print("Warning: Qiskit Nature not available. Using placeholder implementations.")
 
 
 class AntinatureQuantumSystems:

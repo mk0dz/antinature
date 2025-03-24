@@ -29,7 +29,6 @@ try:
     try:
         from qiskit.primitives import Estimator
 
-        print("Primitives (Estimator) available.")
         HAS_PRIMITIVES = True
     except ImportError:
         try:
@@ -38,10 +37,9 @@ try:
 
             # Replace the old API with new one
             Estimator = StatevectorEstimator
-            print("Using StatevectorEstimator as replacement for Estimator.")
             HAS_PRIMITIVES = True
         except ImportError:
-            print("Primitives not available. Using legacy VQE.")
+            pass
 
     HAS_QISKIT = True
 except ImportError as e:
@@ -178,14 +176,9 @@ class PositroniumVQESolver:
                 from qiskit.primitives import StatevectorEstimator
 
                 self.estimator = StatevectorEstimator()
-                print("Using modern StatevectorEstimator primitive")
             except ImportError:
                 # Fall back to legacy Estimator if needed
                 self.estimator = Estimator()
-                print("Using legacy Estimator primitive")
-        else:
-            self.estimator = None
-            print("Warning: Using legacy VQE without Estimator primitive")
 
         # Set up optimizer with appropriate parameters
         if optimizer_name == 'COBYLA':
@@ -260,18 +253,14 @@ class PositroniumVQESolver:
                 numpy_solver = NumPyMinimumEigensolver()
                 classical_result = numpy_solver.compute_minimum_eigenvalue(qubit_op)
                 classical_energy = classical_result.eigenvalue.real
-                print(
-                    f"Classical computation completed. Energy: {classical_energy:.6f}"
-                )
             except Exception as e:
-                print(f"Warning: Classical solution failed: {str(e)}")
+                pass
 
         # Create ansatz using the function (to avoid circular imports)
         try:
             ansatz = create_positronium_circuit(
                 reps=reps, include_entanglement=include_entanglement
             )
-            print(f"Created ansatz with {ansatz.num_parameters} parameters")
         except Exception as e:
             raise RuntimeError(f"Failed to create positronium circuit: {str(e)}")
 
@@ -299,7 +288,6 @@ class PositroniumVQESolver:
             try:
                 # Adjust initial point for retries
                 if attempt > 0:
-                    print(f"VQE attempt {attempt+1}/{n_tries}...")
                     # Perturb initial point for new attempts
                     perturbed_point = initial_point + 0.2 * np.random.randn(
                         len(initial_point)
@@ -339,13 +327,9 @@ class PositroniumVQESolver:
 
                 # If we're close to theoretical value, stop attempts
                 if abs(energy - (-0.25)) < 0.05:
-                    print(
-                        f"Found solution close to theoretical value. Stopping attempts."
-                    )
                     break
 
             except Exception as e:
-                print(f"Warning: VQE attempt {attempt+1} failed: {str(e)}")
                 if attempt == n_tries - 1:
                     raise RuntimeError(f"All VQE attempts failed. Last error: {str(e)}")
 

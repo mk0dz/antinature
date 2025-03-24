@@ -22,30 +22,22 @@ try:
         from qiskit.transpiler.passes import Unroll3qOrMore, UnrollCustomDefinitions
     except ImportError:
         transpiler_imports_successful = False
-        print(
-            "Warning: Some transpiler passes (Unroll3qOrMore, UnrollCustomDefinitions) not available."
-        )
 
     try:
         from qiskit.transpiler.passes import Unroller
     except ImportError:
         # This pass might have been deprecated or moved in newer Qiskit versions
-        print(
-            "Warning: Unroller pass not available in this Qiskit version. Using alternatives."
-        )
+        pass
 
     try:
         from qiskit.transpiler.passes import CXCancellation, Optimize1qGates
     except ImportError:
         transpiler_imports_successful = False
-        print("Warning: Some gate optimization passes not available.")
 
     # If all core imports succeeded, set HAS_QISKIT to True
     HAS_QISKIT = True
-    print("Qiskit successfully imported.")
 
-except ImportError as e:
-    print(f"Warning: Qiskit not available: {str(e)}. Functionality limited.")
+except ImportError:
     HAS_QISKIT = False
 
 
@@ -141,14 +133,11 @@ class AntinatureCircuits:
                 try:
                     self.pass_manager.append(Optimize1qGates())
                     self.pass_manager.append(CXCancellation())
-                    print("Added gate optimization passes to transpiler.")
                 except (NameError, ImportError):
-                    print(
-                        "Warning: Gate optimization passes not available. Skipping these optimizations."
-                    )
+                    pass
 
-            except ImportError as e:
-                print(f"Warning: Could not set up transpiler passes: {str(e)}")
+            except ImportError:
+                pass
 
         # For hardware-aware optimization, additional setup would be needed
         if self.hardware_aware and self.backend is not None:

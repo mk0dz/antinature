@@ -63,8 +63,7 @@ try:
                 AntinatureQuantumSystems,
                 AntinatureVQESolver,
             )
-        except ImportError as e:
-            print(f"Warning: Could not import some Qiskit components: {e}")
+        except ImportError:
+            pass
 except ImportError:
     HAS_QISKIT = False
-    print("Qiskit integration not available. Install qiskit for quantum features.")

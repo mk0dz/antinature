@@ -14,18 +14,14 @@ HAS_QISKIT_NATURE = False
 try:
     import qiskit
 
-    print("Successfully imported Qiskit base package")
     HAS_QISKIT = True
 
     # Import Pauli operators
     try:
         from qiskit.quantum_info import Operator, Pauli, SparsePauliOp
 
-        print("Successfully imported Pauli and SparsePauliOp")
         HAS_SPARSE_PAULIOP = True
     except ImportError:
-        print("Warning: Pauli operators not available")
-
         # Create dummy classes for compatibility
         class SparsePauliOp:
             pass
@@ -39,11 +35,7 @@ try:
     # Import parameter vector
     try:
         from qiskit.circuit import ParameterVector
-
-        print("Successfully imported ParameterVector")
     except ImportError:
-        print("Warning: ParameterVector not available")
-
         # Create dummy class
         class ParameterVector:
             pass
@@ -54,23 +46,18 @@ try:
         from qiskit_algorithms import VQE, NumPyMinimumEigensolver
         from qiskit_algorithms.optimizers import COBYLA, SPSA
 
-        print("Qiskit successfully imported.")
         HAS_QISKIT_NATURE = True
 
         # Check for estimator
         try:
             from qiskit.primitives import Estimator
-
-            print("Primitives (Estimator) available.")
         except ImportError:
-            print("Warning: Qiskit Estimator not available.")
+            pass
     except ImportError:
-        print("Warning: Qiskit Nature or algorithms not available.")
+        pass
 
 except ImportError:
-    print(
-        "Warning: Qiskit or dependent packages not available. Qiskit integration will be disabled."
-    )
+    pass
 
 # Define placeholder classes in case imports fail
 if not HAS_SPARSE_PAULIOP:
@@ -86,9 +73,7 @@ if HAS_QISKIT:
         # that check if the main package can be imported
         try:
             from .adapter import QiskitNatureAdapter
-        except ImportError as e:
-            print(f"Error importing QiskitNatureAdapter: {e}")
-
+        except ImportError:
             # Define a dummy adapter for compatibility
             class QiskitNatureAdapter:
                 def __init__(self, *args, **kwargs):
@@ -104,10 +89,8 @@ if HAS_QISKIT:
             from .solver import PositroniumVQESolver
             from .systems import AntinatureQuantumSystems
             from .vqe_solver import AntinatureVQESolver
-        except ImportError as e:
-            print(
-                f"Warning: Some Qiskit integration modules could not be imported: {e}"
-            )
+        except ImportError:
+            pass
 
         # Define what should be exposed at package level
         __all__ = [
@@ -154,8 +137,7 @@ if HAS_QISKIT:
         except NameError:
             pass
 
-    except ImportError as e:
-        print(f"Warning: Not all Qiskit integration modules could be imported: {e}")
+    except ImportError:
         __all__ = ['HAS_QISKIT', 'HAS_SPARSE_PAULIOP', 'HAS_QISKIT_NATURE']
 else:
     # Define minimal exports when Qiskit is not available

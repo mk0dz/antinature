@@ -13,9 +13,7 @@ try:
     from qiskit.quantum_info import Statevector
 
     HAS_QISKIT = True
-except ImportError as e:
-    print(f"Warning: Qiskit not available: {e}. Ansatz functionality will be limited.")
-
+except ImportError:
     # Create dummy classes for type hints
     class QuantumCircuit:
         def __init__(self, *args, **kwargs):
@@ -550,11 +548,8 @@ class AntinatureAnsatz:
                 skip_final_rotation_layer=False,
             )
             return circuit
-        except Exception as e:
+        except Exception:
             # Fallback implementation if circuit library fails
-            print(f"Warning: EfficientSU2 creation failed: {str(e)}")
-            print("Using custom implementation...")
-
             # Create a custom implementation
             circuit = QuantumCircuit(n_qubits)
 
@@ -743,9 +738,6 @@ class AntinatureAnsatz:
             # Default to hardware efficient ansatz
             n_qubits = kwargs.get('n_qubits', 4)
             entanglement = kwargs.get('entanglement', 'linear')
-            print(
-                f"No specialized ansatz for '{system_name}'. Using hardware-efficient ansatz."
-            )
             return AntinatureAnsatz.create_hardware_efficient_ansatz(
                 n_qubits=n_qubits, reps=reps, entanglement=entanglement
             )
