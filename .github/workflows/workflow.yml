@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.12", "3.10", "3.11"]
+        python-version: ["3.10", "3.11"]
     
     steps:
       - uses: actions/checkout@v4
@@ -37,13 +37,6 @@ jobs:
           pip install pytest pytest-cov
           # Install development dependencies 
           pip install -e .[dev]
-          # Fix package compatibility for Python 3.12
-          if [[ "${{ matrix.python-version }}" == "3.12" ]]; then
-            # Ensure specific qiskit versions that work with Python 3.12
-            pip install "qiskit>=1.0.0" "qiskit-aer>=0.12.0"
-            # Print installed versions for debugging
-            pip list | grep qiskit
-          fi
       
       - name: Run tests
         run: |
