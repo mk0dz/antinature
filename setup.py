@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="antinature",
-    version="0.1.0",  # Increment version since you're making changes
+    version="0.1.1",  # Increment version since you're making changes
     packages=find_packages(),
     py_modules=['antinature'],  # Removed duplicate 'antinature'
     install_requires=[
