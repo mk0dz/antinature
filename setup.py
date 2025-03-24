@@ -1,4 +1,4 @@
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
@@ -9,8 +9,8 @@ setup(
     packages=find_packages(),
     py_modules=['antinature'],  # Removed duplicate 'antinature'
     install_requires=[
-        "numpy>=1.20.0,<3.0.0",      # Wider range, avoiding breaking changes
-        "scipy>=1.5.2,<3.0.0",       # Relaxed upper bound
+        "numpy>=1.20.0,<3.0.0",  # Wider range, avoiding breaking changes
+        "scipy>=1.5.2,<3.0.0",  # Relaxed upper bound
         "matplotlib>=3.4.0,<4.0.0",  # More flexible but still stable
         "typing-extensions>=4.0.0,<5.0.0",  # Added upper bound for safety
     ],

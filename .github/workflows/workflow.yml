@@ -17,7 +17,46 @@ permissions:
   contents: write
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.8", "3.9", "3.10"]
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest pytest-cov
+
+          # Install specific dependencies based on Python version
+          if [[ "${{ matrix.python-version }}" == "3.8" ]]; then
+            # Python 3.8-specific dependencies
+            pip install "numpy>=1.20.0,<1.25.0" "scipy>=1.5.2,<1.11.0" "matplotlib>=3.4.0,<3.8.0"
+            pip install "qiskit>=0.42.0,<1.0.0" "qiskit-aer>=0.11.0,<1.0.0"
+          else
+            # Latest dependencies for newer Python versions
+            pip install -e .[all]
+          fi
+      
+      - name: Run tests
+        run: |
+          # Skip tests that require newer Python features in Python 3.8
+          if [[ "${{ matrix.python-version }}" == "3.8" ]]; then
+            pytest --cov=antinature -k "not test_vqe_solver"
+          else
+            pytest --cov=antinature
+          fi
+
   version-bump:
+    needs: test
     runs-on: ubuntu-latest
     outputs:
       new_version: ${{ steps.bump_version.outputs.new_version }}
