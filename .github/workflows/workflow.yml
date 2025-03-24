@@ -142,9 +142,6 @@ jobs:
     permissions:
       id-token: write  # Required for trusted publishing
 
-    # Generic environment name that should work
-    environment: release
-
     steps:
       - name: Retrieve release distributions
         uses: actions/download-artifact@v4

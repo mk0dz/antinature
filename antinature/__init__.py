@@ -11,6 +11,15 @@ interactions, relativistic corrections, and electron-positron annihilation proce
 
 __version__ = "0.1.0"
 
+
+# Define dummy classes to prevent NameError in importing code
+class QuantumCircuit:
+    """Dummy QuantumCircuit class to prevent NameError when importing with missing Qiskit."""
+
+    def __init__(self, *args, **kwargs):
+        pass
+
+
 # Core components
 from .core.basis import BasisSet, GaussianBasisFunction, MixedMatterBasis, PositronBasis
 from .core.correlation import AntinatureCorrelation
@@ -28,14 +37,34 @@ from .specialized.visualization import AntinatureVisualizer
 # Utilities
 from .utils import create_antinature_calculation
 
-# Optional quantum components
-try:
-    from .qiskit_integration import (
-        AntinatureQuantumSolver,
-        AntinatureQuantumSystems,
-        AntinatureVQESolver,
-    )
+# Set default flags
+HAS_QISKIT = False
 
-    HAS_QISKIT = True
+# Optional quantum components - with careful import handling
+try:
+    # First just check if qiskit is available
+    import qiskit
+
+    # Import necessary basic classes to avoid NameError
+    try:
+        from qiskit import QuantumCircuit
+    except ImportError:
+        # We already defined a placeholder above
+        pass
+
+    # Import the integration module which will handle its own imports gracefully
+    from .qiskit_integration import HAS_QISKIT
+
+    # Only import specific components if Qiskit is actually available
+    if HAS_QISKIT:
+        try:
+            from .qiskit_integration import (
+                AntinatureQuantumSolver,
+                AntinatureQuantumSystems,
+                AntinatureVQESolver,
+            )
+        except ImportError as e:
+            print(f"Warning: Could not import some Qiskit components: {e}")
 except ImportError:
     HAS_QISKIT = False
+    print("Qiskit integration not available. Install qiskit for quantum features.")

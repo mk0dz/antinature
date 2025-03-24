@@ -4,22 +4,42 @@ import os
 import sys
 
 import numpy as np
+import pytest
 
 # Add parent directory to path to import the module
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+# Initialize flags
+HAS_QISKIT = False
+HAS_SPARSE_PAULIOP = False
 
 try:
     from qiskit.quantum_info import SparsePauliOp
 
     HAS_QISKIT = True
+    HAS_SPARSE_PAULIOP = True
 except ImportError:
-    HAS_QISKIT = False
-    print("Qiskit not installed. Skipping tests.")
-    sys.exit(0)
+    print("Qiskit quantum_info not installed. Adapter tests will be skipped.")
 
-from antinature.qiskit_integration.adapter import (
-    PositroniumAdapter,
-    QiskitNatureAdapter,
+# Only try to import the adapter if Qiskit is available
+if HAS_QISKIT and HAS_SPARSE_PAULIOP:
+    try:
+        from antinature.qiskit_integration.adapter import (
+            PositroniumAdapter,
+            QiskitNatureAdapter,
+        )
+
+        HAS_ADAPTER = True
+    except ImportError as e:
+        print(f"Error importing adapter: {e}")
+        HAS_ADAPTER = False
+else:
+    HAS_ADAPTER = False
+
+# Skip all tests in this module if requirements aren't met
+pytestmark = pytest.mark.skipif(
+    not (HAS_QISKIT and HAS_SPARSE_PAULIOP and HAS_ADAPTER),
+    reason="Required Qiskit modules not available",
 )
 
 

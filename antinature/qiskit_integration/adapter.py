@@ -20,6 +20,14 @@ try:
     HAS_QISKIT = True
 except ImportError:
     HAS_QISKIT = False
+
+    # Create dummy classes to avoid NameError
+    class SparsePauliOp:
+        pass
+
+    class FermionicOp:
+        pass
+
     print("Warning: Qiskit Nature not available. Quantum functionality limited.")
 
 

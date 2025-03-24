@@ -5,43 +5,60 @@ import sys
 
 import matplotlib.pyplot as plt
 import numpy as np
+import pytest
 
 # Add parent directory to path to import the module
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+# Initialize flags
+HAS_QISKIT = False
+HAS_SPARSE_PAULIOP = False
+HAS_PARAMETER_VECTOR = False
 
 # Try each import separately to identify which one is failing
 try:
     from qiskit import QuantumCircuit
 
     print("Successfully imported QuantumCircuit")
+    HAS_QISKIT = True
 except ImportError as e:
     print(f"Error importing QuantumCircuit: {e}")
-    HAS_QISKIT = False
-    print("Qiskit base not installed. Skipping tests.")
-    sys.exit(0)
+    # Don't exit - we'll skip tests in a more pytest-friendly way
 
 try:
     from qiskit.quantum_info import Pauli, SparsePauliOp
 
     print("Successfully imported Pauli and SparsePauliOp")
+    HAS_SPARSE_PAULIOP = True
 except ImportError as e:
     print(f"Error importing from quantum_info: {e}")
-    HAS_QISKIT = False
-    print("Qiskit quantum_info package not available. Skipping tests.")
-    sys.exit(0)
+    # Don't exit
 
 try:
     from qiskit.circuit import ParameterVector
 
     print("Successfully imported ParameterVector")
-    HAS_QISKIT = True
+    HAS_PARAMETER_VECTOR = True
 except ImportError as e:
     print(f"Error importing ParameterVector: {e}")
-    HAS_QISKIT = False
-    print("Qiskit circuit package not fully available. Skipping tests.")
-    sys.exit(0)
+    # Don't exit
 
-from antinature.qiskit_integration.vqe_solver import AntinatureVQESolver
+# Only try to import AntinatureVQESolver if the basic Qiskit imports are available
+if HAS_QISKIT and HAS_SPARSE_PAULIOP and HAS_PARAMETER_VECTOR:
+    try:
+        from antinature.qiskit_integration.vqe_solver import AntinatureVQESolver
+
+        HAS_VQE_SOLVER = True
+    except ImportError:
+        HAS_VQE_SOLVER = False
+else:
+    HAS_VQE_SOLVER = False
+
+# Skip the entire test module if requirements are not met
+pytestmark = pytest.mark.skipif(
+    not (HAS_QISKIT and HAS_SPARSE_PAULIOP and HAS_PARAMETER_VECTOR and HAS_VQE_SOLVER),
+    reason="Required Qiskit modules not available",
+)
 
 
 def create_test_hamiltonian():

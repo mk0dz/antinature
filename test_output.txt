@@ -1,0 +1,7 @@
+Python 3.13.1 (main, Dec  4 2024, 18:05:56) [GCC 14.2.1 20240910]
+Simulating missing Qiskit...
+Qiskit integration not available. Install qiskit for quantum features.
+✅ Basic import successful
+Warning: Qiskit or dependent packages not available. Qiskit integration will be disabled.
+✅ Qiskit integration import successful despite missing Qiskit
+Test completed successfully!

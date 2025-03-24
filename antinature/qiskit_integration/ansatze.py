@@ -1,27 +1,47 @@
 # antinature/qiskit_integration/ansatze.py
 
+import math
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
 
-# Import qiskit with improved error handling
+# Import Qiskit with error handling
 try:
-    import qiskit
     from qiskit import QuantumCircuit
     from qiskit.circuit import Parameter
-    from qiskit.circuit.library import EfficientSU2, NLocal, TwoLocal
+    from qiskit.circuit.library import EfficientSU2
+    from qiskit.quantum_info import Statevector
 
     HAS_QISKIT = True
 except ImportError as e:
+    print(f"Warning: Qiskit not available: {e}. Ansatz functionality will be limited.")
+
+    # Create dummy classes for type hints
+    class QuantumCircuit:
+        def __init__(self, *args, **kwargs):
+            raise ImportError("QuantumCircuit not available. Install qiskit.")
+
+    class Parameter:
+        def __init__(self, *args, **kwargs):
+            raise ImportError("Parameter not available. Install qiskit.")
+
+    class EfficientSU2:
+        def __init__(self, *args, **kwargs):
+            raise ImportError("EfficientSU2 not available. Install qiskit.")
+
+    class Statevector:
+        def __init__(self, *args, **kwargs):
+            raise ImportError("Statevector not available. Install qiskit.")
+
     HAS_QISKIT = False
-    print(
-        f"Warning: Qiskit not available: {str(e)}. Ansatz functionality will be limited."
-    )
+
+# Indicate class availability
+HAS_ANSATZ = HAS_QISKIT
 
 
 class AntinatureAnsatz:
     """
-    Collection of specialized quantum ansätze for antinature systems.
+    Collection of specialized ansatz circuits for antimatter systems.
 
     This class provides a library of quantum circuit ansätze specifically designed
     for simulating various antinature systems including positronium, anti-hydrogen,
