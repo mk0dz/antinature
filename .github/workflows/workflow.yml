@@ -67,7 +67,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install bumpversion setuptools wheel
+          pip install bump2version==1.0.1 setuptools wheel
 
       - name: Bump version
         id: bump_version
@@ -77,7 +77,7 @@ jobs:
           echo "Current version: $current_version"
           
           # Bump version
-          bumpversion --allow-dirty ${{ github.event.inputs.bump_type }}
+          bump2version --allow-dirty ${{ github.event.inputs.bump_type }}
           
           # Get new version
           new_version=$(grep -Po '(?<=version="|version = ")[^"]*' $(find . -name "setup.py" -o -name "pyproject.toml" | head -1))
