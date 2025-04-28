@@ -1,4 +1,18 @@
-# Antinature: A Quantum Chemistry Framework for Antimatter Systems
+---
+title: Antinature: A Quantum Chemistry Framework for Antimatter Systems
+tags:
+  - Python
+  - Antimatter Physics 
+  - Quantum Computing 
+
+authors:
+  - name: Mukul Kumar
+    affiliation: "1"
+
+affiliations:
+  - index: 1
+    name: Delhi, India
+date: 28 April 2025
 
 ## Introduction
 
