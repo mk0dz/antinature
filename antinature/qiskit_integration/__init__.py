@@ -1,144 +1,106 @@
 """
-Qiskit integration module for antinature quantum chemistry.
+Qiskit integration for quantum algorithms in antimatter systems.
 
-This module provides integration with Qiskit and Qiskit-Nature
-for simulating antinature systems on quantum computers.
+This module provides quantum computing implementations for antinature
+calculations using IBM's Qiskit framework.
 """
+import warnings
 
-# Initialize variables
+# Check for Qiskit availability first
 HAS_QISKIT = False
-HAS_SPARSE_PAULIOP = False
+HAS_QISKIT_ALGORITHMS = False
 HAS_QISKIT_NATURE = False
 
-# Check if Qiskit basic package is available
 try:
     import qiskit
-
+    from qiskit.quantum_info import Operator, Pauli, SparsePauliOp
     HAS_QISKIT = True
-
-    # Import Pauli operators
-    try:
-        from qiskit.quantum_info import Operator, Pauli, SparsePauliOp
-
-        HAS_SPARSE_PAULIOP = True
-    except ImportError:
-        # Create dummy classes for compatibility
-        class SparsePauliOp:
-            pass
-
-        class Pauli:
-            pass
-
-        class Operator:
-            pass
-
-    # Import parameter vector
-    try:
-        from qiskit.circuit import ParameterVector
-    except ImportError:
-        # Create dummy class
-        class ParameterVector:
-            pass
-
-    # Import Qiskit Nature
-    try:
-        import qiskit_nature
-        from qiskit_algorithms import VQE, NumPyMinimumEigensolver
-        from qiskit_algorithms.optimizers import COBYLA, SPSA
-
-        HAS_QISKIT_NATURE = True
-
-        # Check for estimator
-        try:
-            from qiskit.primitives import Estimator
-        except ImportError:
-            pass
-    except ImportError:
-        pass
-
+    print(f"Qiskit available (version {qiskit.__version__})")
 except ImportError:
-    pass
+    print("Warning: Qiskit not available. Limited functionality.")
 
-# Define placeholder classes in case imports fail
-if not HAS_SPARSE_PAULIOP:
+try:
+    import qiskit_algorithms
+    HAS_QISKIT_ALGORITHMS = True
+    print(f"Qiskit Algorithms available (version {qiskit_algorithms.__version__})")
+except ImportError:
+    print("Warning: Qiskit Algorithms not available. Limited functionality.")
 
-    class SparsePauliOp:
-        pass
+try:
+    import qiskit_nature
+    HAS_QISKIT_NATURE = True
+    print(f"Qiskit Nature available (version {qiskit_nature.__version__})")
+except ImportError:
+    print("Warning: Qiskit Nature not available. Limited functionality.")
 
-
-# Import our modules, but wrap in try-except to handle missing dependencies
+# Import quantum circuit related classes
 if HAS_QISKIT:
     try:
-        # Import the adapter directly - this is most important for tests
-        # that check if the main package can be imported
-        try:
-            from .adapter import QiskitNatureAdapter
-        except ImportError:
-            # Define a dummy adapter for compatibility
-            class QiskitNatureAdapter:
-                def __init__(self, *args, **kwargs):
-                    raise ImportError(
-                        "QiskitNatureAdapter not available. Install required dependencies."
-                    )
-
-        # Attempt to import other components with graceful fallback
-        try:
-            from .ansatze import AntinatureAnsatz
-            from .antimatter_solver import AntinatureQuantumSolver
-            from .circuits import AntinatureCircuits, PositroniumCircuit
-            from .solver import PositroniumVQESolver
-            from .systems import AntinatureQuantumSystems
-            from .vqe_solver import AntinatureVQESolver
-        except ImportError:
-            pass
-
-        # Define what should be exposed at package level
-        __all__ = [
-            'QiskitNatureAdapter',
-            'HAS_QISKIT',
-            'HAS_SPARSE_PAULIOP',
-            'HAS_QISKIT_NATURE',
-        ]
-
-        # Add optional components to __all__ if they're available
-        try:
-            AntinatureCircuits
-            __all__.extend(['AntinatureCircuits', 'PositroniumCircuit'])
-        except NameError:
-            pass
-
-        try:
-            PositroniumVQESolver
-            __all__.extend(['PositroniumVQESolver'])
-        except NameError:
-            pass
-
-        try:
-            AntinatureQuantumSystems
-            __all__.extend(['AntinatureQuantumSystems'])
-        except NameError:
-            pass
-
-        try:
-            AntinatureQuantumSolver
-            __all__.extend(['AntinatureQuantumSolver'])
-        except NameError:
-            pass
-
-        try:
-            AntinatureVQESolver
-            __all__.extend(['AntinatureVQESolver'])
-        except NameError:
-            pass
-
-        try:
-            AntinatureAnsatz
-            __all__.extend(['AntinatureAnsatz'])
-        except NameError:
-            pass
-
+        from qiskit import QuantumCircuit
+        from qiskit.circuit import ParameterVector
+        __all__ = ['QuantumCircuit', 'ParameterVector']
     except ImportError:
-        __all__ = ['HAS_QISKIT', 'HAS_SPARSE_PAULIOP', 'HAS_QISKIT_NATURE']
+        __all__ = []
 else:
-    # Define minimal exports when Qiskit is not available
-    __all__ = ['HAS_QISKIT', 'HAS_SPARSE_PAULIOP', 'HAS_QISKIT_NATURE']
+    __all__ = []
+
+# Import algorithms if available
+if HAS_QISKIT_ALGORITHMS:
+    try:
+        from qiskit_algorithms import VQE, NumPyMinimumEigensolver
+        from qiskit_algorithms.optimizers import COBYLA, SPSA
+        __all__.extend(['VQE', 'NumPyMinimumEigensolver', 'COBYLA', 'SPSA'])
+    except ImportError:
+        pass
+
+# Import primitives if available
+if HAS_QISKIT:
+    try:
+        from qiskit.primitives import Estimator
+        __all__.append('Estimator')
+    except ImportError:
+        pass
+
+# Conditionally import module components only if dependencies are available
+if HAS_QISKIT and HAS_QISKIT_ALGORITHMS:
+    try:
+        from .adapter import AntinatureQuantumAdapter
+        __all__.append('AntinatureQuantumAdapter')
+    except ImportError as e:
+        warnings.warn(f"Could not import AntinatureQuantumAdapter: {e}")
+
+    try:
+        from .ansatze import AntinatureAnsatz
+        __all__.append('AntinatureAnsatz')
+    except ImportError as e:
+        warnings.warn(f"Could not import AntinatureAnsatz: {e}")
+
+    try:
+        from .circuits import QuantumCircuitBuilder
+        __all__.append('QuantumCircuitBuilder')
+    except ImportError as e:
+        warnings.warn(f"Could not import QuantumCircuitBuilder: {e}")
+
+    # solver.py removed - functionality merged into antimatter_solver.py
+
+    try:
+        # Only import these if all dependencies are available
+        from .vqe_solver import AntinatureVQESolver
+        __all__.append('AntinatureVQESolver')
+    except ImportError as e:
+        warnings.warn(f"Could not import AntinatureVQESolver: {e}")
+
+    try:
+        from .antimatter_solver import AntinatureQuantumSolver
+        __all__.append('AntinatureQuantumSolver')
+    except ImportError as e:
+        warnings.warn(f"Could not import AntinatureQuantumSolver: {e}")
+
+    try:
+        from .systems import AntinatureQuantumSystems
+        __all__.append('AntinatureQuantumSystems')
+    except ImportError as e:
+        warnings.warn(f"Could not import AntinatureQuantumSystems: {e}")
+
+else:
+    warnings.warn("Qiskit and/or Qiskit Algorithms not available. Quantum functionality disabled.")

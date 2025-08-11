@@ -741,3 +741,30 @@ class AntinatureAnsatz:
             return AntinatureAnsatz.create_hardware_efficient_ansatz(
                 n_qubits=n_qubits, reps=reps, entanglement=entanglement
             )
+
+
+# Standalone function for backward compatibility
+def create_positronium_circuit(reps: int = 2, include_entanglement: bool = True):
+    """
+    Create a parameterized quantum circuit for positronium VQE.
+    
+    This is a standalone function for backward compatibility with older code.
+    
+    Parameters:
+    -----------
+    reps : int
+        Number of repetition layers in the ansatz
+    include_entanglement : bool
+        Whether to include entanglement gates between electron and positron qubits
+        
+    Returns:
+    --------
+    QuantumCircuit
+        Parameterized quantum circuit for VQE
+    """
+    if not HAS_QISKIT:
+        raise ImportError("Qiskit is required for this functionality")
+    
+    # Use the AntinatureAnsatz class method
+    ansatz = AntinatureAnsatz(num_qubits=2, reps=reps)
+    return ansatz.create_positronium_ansatz(include_entanglement=include_entanglement)

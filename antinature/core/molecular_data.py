@@ -1,5 +1,6 @@
 # antinature/core/molecular_data.py
 
+import warnings
 from typing import Dict, List, Optional, Tuple, Union
 
 import matplotlib.pyplot as plt
@@ -110,7 +111,10 @@ class MolecularData:
         self.atomic_masses = np.array(self.atomic_masses)
 
         # Extract coordinates in more convenient form
-        self.geometry = np.vstack([position for _, position in self.atoms])
+        if self.atoms:
+            self.geometry = np.vstack([position for _, position in self.atoms])
+        else:
+            self.geometry = np.array([])
 
         # Initialize additional properties
         self._nuclear_repulsion_energy = None
@@ -219,6 +223,16 @@ class MolecularData:
         for i, (_, charge_i, pos_i) in enumerate(self.nuclei):
             for j, (_, charge_j, pos_j) in enumerate(self.nuclei[i + 1 :], i + 1):
                 r_ij = np.linalg.norm(pos_i - pos_j)
+                
+                # Handle overlapping atoms by using a minimum distance threshold
+                if r_ij < 1e-10:  # Very small distance threshold
+                    warnings.warn(
+                        f"Atoms {i} and {j} are overlapping or very close (r = {r_ij:.2e}). "
+                        "Using minimum distance threshold to avoid division by zero.",
+                        RuntimeWarning
+                    )
+                    r_ij = 1e-10  # Use minimum distance to avoid division by zero
+                
                 energy += charge_i * charge_j / r_ij
 
         self._nuclear_repulsion_energy = energy
@@ -349,7 +363,10 @@ class MolecularData:
                 self.nuclei[i] = (element, self.nuclear_charges[i], new_position)
 
         # Update geometry array
-        self.geometry = np.vstack([position for _, position in self.atoms])
+        if self.atoms:
+            self.geometry = np.vstack([position for _, position in self.atoms])
+        else:
+            self.geometry = np.array([])
 
         # Reset cached values
         self._center_of_mass = None
@@ -378,7 +395,10 @@ class MolecularData:
                 self.nuclei[i] = (element, self.nuclear_charges[i], new_position)
 
         # Update geometry array
-        self.geometry = np.vstack([position for _, position in self.atoms])
+        if self.atoms:
+            self.geometry = np.vstack([position for _, position in self.atoms])
+        else:
+            self.geometry = np.array([])
 
         # Reset center of mass
         self._center_of_mass = None

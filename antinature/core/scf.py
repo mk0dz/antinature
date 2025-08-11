@@ -122,6 +122,177 @@ class AntinatureSCF:
             'anti_hydrogen': -0.5,  # Hartree
             'positronium_molecule': -0.52,  # Hartree (approximate)
         }
+        
+        # For numerical stability
+        self._overlap_regularized = False
+        self._basis_optimized = False
+
+    def regularize_overlap_matrix(self, S, regularization_param=1e-10):
+        """
+        Regularize the overlap matrix to handle near-singular cases.
+        
+        Parameters:
+        -----------
+        S : np.ndarray
+            Overlap matrix
+        regularization_param : float
+            Regularization parameter to add to diagonal
+            
+        Returns:
+        --------
+        Tuple[np.ndarray, Dict]
+            Regularized overlap matrix and diagnostics
+        """
+        # Analyze the original matrix
+        eigenvals, eigenvecs = np.linalg.eigh(S)
+        original_cond = np.linalg.cond(S)
+        n_near_zero = np.sum(eigenvals < 1e-8)
+        
+        diagnostics = {
+            'original_condition_number': original_cond,
+            'original_min_eigenvalue': np.min(eigenvals),
+            'original_max_eigenvalue': np.max(eigenvals),
+            'near_zero_eigenvalues': n_near_zero,
+            'regularization_applied': False
+        }
+        
+        if original_cond > 1e12 or n_near_zero > 0:
+            if self.print_level > 0:
+                print(f"WARNING: Overlap matrix is poorly conditioned!")
+                print(f"  Condition number: {original_cond:.2e}")
+                print(f"  Near-zero eigenvalues: {n_near_zero}")
+                print(f"  Applying regularization...")
+            
+            # Method 1: Diagonal regularization
+            S_reg = S + regularization_param * np.eye(S.shape[0])
+            
+            # Method 2: Eigenvalue filtering (more sophisticated)
+            threshold = 1e-8
+            good_eigenvals = eigenvals > threshold
+            
+            if np.sum(good_eigenvals) < len(eigenvals):
+                # Some eigenvalues are too small - use subspace method
+                if self.print_level > 0:
+                    print(f"  Using eigenvalue filtering: keeping {np.sum(good_eigenvals)}/{len(eigenvals)} functions")
+                
+                # Keep only good eigenvalues and eigenvectors
+                eigenvals_filtered = eigenvals[good_eigenvals]
+                eigenvecs_filtered = eigenvecs[:, good_eigenvals]
+                
+                # Reconstruct matrix with filtered eigenvalues
+                S_reg = eigenvecs_filtered @ np.diag(eigenvals_filtered) @ eigenvecs_filtered.T
+                
+                # Add small regularization for numerical stability
+                S_reg += 1e-12 * np.eye(S_reg.shape[0])
+                
+                diagnostics['eigenvalue_filtering_applied'] = True
+                diagnostics['functions_kept'] = np.sum(good_eigenvals)
+            
+            # Verify the regularized matrix
+            reg_cond = np.linalg.cond(S_reg)
+            reg_eigenvals = np.linalg.eigvals(S_reg)
+            
+            diagnostics.update({
+                'regularization_applied': True,
+                'final_condition_number': reg_cond,
+                'final_min_eigenvalue': np.min(reg_eigenvals),
+                'final_max_eigenvalue': np.max(reg_eigenvals),
+                'improvement_factor': original_cond / reg_cond
+            })
+            
+            if self.print_level > 0:
+                print(f"  Regularization successful!")
+                print(f"  New condition number: {reg_cond:.2e}")
+                print(f"  Improvement factor: {diagnostics['improvement_factor']:.2e}")
+            
+            return S_reg, diagnostics
+        else:
+            return S, diagnostics
+
+    def symmetric_orthogonalization(self, S):
+        """
+        Perform symmetric orthogonalization of the overlap matrix.
+        
+        This creates the transformation matrix X such that X^T S X = I
+        
+        Parameters:
+        -----------
+        S : np.ndarray
+            Overlap matrix
+            
+        Returns:
+        --------
+        np.ndarray
+            Transformation matrix X
+        """
+        # Diagonalize overlap matrix
+        eigenvals, eigenvecs = np.linalg.eigh(S)
+        
+        # Check for linear dependencies
+        threshold = 1e-8
+        good_eigenvals = eigenvals > threshold
+        n_linear_dep = np.sum(~good_eigenvals)
+        
+        if n_linear_dep > 0:
+            if self.print_level > 0:
+                print(f"WARNING: {n_linear_dep} linear dependencies detected during orthogonalization")
+                print(f"Removing {n_linear_dep} functions from the basis")
+            
+            # Keep only linearly independent functions
+            eigenvals = eigenvals[good_eigenvals]
+            eigenvecs = eigenvecs[:, good_eigenvals]
+        
+        # Create transformation matrix: X = U * s^(-1/2)
+        s_inv_sqrt = np.diag(1.0 / np.sqrt(eigenvals))
+        X = eigenvecs @ s_inv_sqrt
+        
+        return X
+
+    def solve_generalized_eigenvalue_problem(self, H, S):
+        """
+        Solve the generalized eigenvalue problem HC = SCE robustly.
+        
+        Parameters:
+        -----------
+        H : np.ndarray
+            Hamiltonian matrix
+        S : np.ndarray
+            Overlap matrix
+            
+        Returns:
+        --------
+        Tuple[np.ndarray, np.ndarray]
+            Eigenvalues and eigenvectors
+        """
+        try:
+            # First try the standard approach
+            eigenvals, eigenvecs = eigh(H, S)
+            return eigenvals, eigenvecs
+            
+        except np.linalg.LinAlgError as e:
+            if self.print_level > 0:
+                print(f"Standard eigenvalue solver failed: {e}")
+                print("Attempting symmetric orthogonalization approach...")
+            
+            # Regularize overlap matrix first
+            S_reg, diagnostics = self.regularize_overlap_matrix(S)
+            
+            # Use symmetric orthogonalization
+            X = self.symmetric_orthogonalization(S_reg)
+            
+            # Transform Hamiltonian to orthogonal basis
+            H_ortho = X.T @ H @ X
+            
+            # Solve in orthogonal basis
+            eigenvals, eigenvecs_ortho = eigh(H_ortho)
+            
+            # Transform back to original basis
+            eigenvecs = X @ eigenvecs_ortho
+            
+            if self.print_level > 0:
+                print("Symmetric orthogonalization successful!")
+            
+            return eigenvals, eigenvecs
 
     def initial_guess(self):
         """
@@ -166,17 +337,30 @@ class AntinatureSCF:
 
             # Form initial density matrix
             self.P_e = np.zeros((n_e_basis, n_e_basis))
-            n_occ = self.n_electrons // 2  # Assuming closed-shell
-
-            # Check if we have enough eigenvalues for occupied orbitals
-            if n_occ > 0 and len(e_vals) > 0:
-                for i in range(min(n_occ, len(e_vals))):
-                    self.P_e += 2.0 * np.outer(e_vecs[:, i], e_vecs[:, i])
+            
+            # Handle both paired and unpaired electrons
+            if self.n_electrons > 0 and len(e_vals) > 0:
+                if self.n_electrons % 2 == 0:
+                    # Even number of electrons - paired (closed shell)
+                    n_occ = self.n_electrons // 2
+                    for i in range(min(n_occ, len(e_vals))):
+                        self.P_e += 2.0 * np.outer(e_vecs[:, i], e_vecs[:, i])
+                else:
+                    # Odd number of electrons - mixed (open shell)
+                    n_paired = (self.n_electrons - 1) // 2
+                    for i in range(min(n_paired, len(e_vals))):
+                        self.P_e += 2.0 * np.outer(e_vecs[:, i], e_vecs[:, i])
+                    # Add the unpaired electron
+                    if n_paired < len(e_vals):
+                        self.P_e += 1.0 * np.outer(e_vecs[:, n_paired], e_vecs[:, n_paired])
+                        
+                if self.print_level > 0:
+                    S_e = self.S[:n_e_basis, :n_e_basis]
+                    trace = np.trace(self.P_e @ S_e)
+                    print(f"Electron density matrix trace: {trace:.6f} (should be {self.n_electrons})")
             else:
                 if self.print_level > 0:
-                    print(
-                        "Warning: No occupied orbitals or eigenvalues available for electrons."
-                    )
+                    print("Warning: No electrons or eigenvalues available.")
         else:
             # Create empty arrays of appropriate shape if basis is empty
             self.E_e = np.array([])
@@ -190,7 +374,7 @@ class AntinatureSCF:
             S_p = self.S[n_e_basis:, n_e_basis:]
             if S_p.size > 0:  # Check if S_p is not empty
                 try:
-                    p_vals, p_vecs = eigh(self.H_core_p, S_p)
+                    p_vals, p_vecs = self.solve_generalized_eigenvalue_problem(self.H_core_p, S_p)
                 except np.linalg.LinAlgError as e:
                     if self.print_level > 0:
                         print(f"Warning: Eigenvalue solver failed for positrons: {e}")
@@ -207,17 +391,30 @@ class AntinatureSCF:
 
                 # Form initial density matrix
                 self.P_p = np.zeros((n_p_basis, n_p_basis))
-                n_occ = self.n_positrons // 2  # Assuming closed-shell
-
-                # Check if we have enough eigenvalues for occupied orbitals
-                if n_occ > 0 and len(p_vals) > 0:
-                    for i in range(min(n_occ, len(p_vals))):
-                        self.P_p += 2.0 * np.outer(p_vecs[:, i], p_vecs[:, i])
+                
+                # Handle both paired and unpaired positrons
+                if self.n_positrons > 0 and len(p_vals) > 0:
+                    if self.n_positrons % 2 == 0:
+                        # Even number of positrons - paired (closed shell)
+                        n_occ = self.n_positrons // 2
+                        for i in range(min(n_occ, len(p_vals))):
+                            self.P_p += 2.0 * np.outer(p_vecs[:, i], p_vecs[:, i])
+                    else:
+                        # Odd number of positrons - mixed (open shell)
+                        n_paired = (self.n_positrons - 1) // 2
+                        for i in range(min(n_paired, len(p_vals))):
+                            self.P_p += 2.0 * np.outer(p_vecs[:, i], p_vecs[:, i])
+                        # Add the unpaired positron
+                        if n_paired < len(p_vals):
+                            self.P_p += 1.0 * np.outer(p_vecs[:, n_paired], p_vecs[:, n_paired])
+                            
+                    if self.print_level > 0:
+                        S_p = self.S[n_e_basis:, n_e_basis:]
+                        trace = np.trace(self.P_p @ S_p)
+                        print(f"Positron density matrix trace: {trace:.6f} (should be {self.n_positrons})")
                 else:
                     if self.print_level > 0:
-                        print(
-                            "Warning: No occupied orbitals or eigenvalues available for positrons."
-                        )
+                        print("Warning: No positrons or eigenvalues available.")
             else:
                 if self.print_level > 0:
                     print("Warning: Empty positron overlap matrix section.")

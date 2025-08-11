@@ -76,4 +76,4 @@ multi_line_output = 3
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = "test_*.py"
-addopts = "--cov=antinature" 
+addopts = "-v --tb=short" 

@@ -1,6 +1,11 @@
 # antinature/qiskit_integration/vqe_solver.py
 
+"""
+Advanced VQE solver for antinature quantum chemistry calculations.
+"""
+
 import time
+import warnings
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import matplotlib.pyplot as plt
@@ -12,7 +17,7 @@ try:
     from qiskit.circuit import Parameter, ParameterVector
     from qiskit.primitives import BackendEstimator, Estimator, StatevectorEstimator
     from qiskit.providers import Backend
-    from qiskit.quantum_info import Operator, Statevector
+    from qiskit.quantum_info import Operator, Statevector, SparsePauliOp
     from qiskit.result import Result
     from qiskit_algorithms import VQE, NumPyMinimumEigensolver
     from qiskit_algorithms.optimizers import (

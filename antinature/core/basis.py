@@ -183,14 +183,15 @@ class BasisSet:
         # Handle different call patterns to make initialization more robust
         if basis_functions is None:
             self.basis_functions = []
+            self.name = name
         elif isinstance(basis_functions, str) and name == "":
             # If first argument is a string and second is empty, assume it's the name
             self.basis_functions = []
             self.name = basis_functions
         else:
-            self.basis_functions = basis_functions
-
-        self.name = name
+            self.basis_functions = basis_functions if basis_functions is not None else []
+            self.name = name
+            
         self.n_basis = len(self.basis_functions)
 
         # Cache for performance optimization
@@ -1161,3 +1162,323 @@ class MixedMatterBasis:
         self._integral_cache[key] = result
 
         return result
+
+    def remove_linear_dependencies(self, overlap_threshold=1e-8):
+        """
+        Remove linearly dependent basis functions using symmetric orthogonalization.
+        
+        This method analyzes the overlap matrix and removes basis functions that
+        cause linear dependencies, ensuring a well-conditioned basis set.
+        
+        Parameters:
+        -----------
+        overlap_threshold : float
+            Threshold for considering eigenvalues as zero (default: 1e-8)
+            
+        Returns:
+        --------
+        Dict
+            Information about the removed functions and basis set statistics
+        """
+        if self.integral_engine is None:
+            raise ValueError("Integral engine must be set before removing linear dependencies")
+            
+        print(f"Analyzing basis set with {self.n_total_basis} functions...")
+        
+        # Build overlap matrix
+        S = np.zeros((self.n_total_basis, self.n_total_basis))
+        
+        for i in range(self.n_total_basis):
+            for j in range(i + 1):
+                basis_i = self.get_basis_function(i)
+                basis_j = self.get_basis_function(j)
+                S[i, j] = self.integral_engine.overlap_integral(basis_i, basis_j)
+                if i != j:
+                    S[j, i] = S[i, j]
+        
+        # Analyze eigenvalues
+        eigenvals, eigenvecs = np.linalg.eigh(S)
+        
+        # Find linearly independent functions
+        good_indices = eigenvals > overlap_threshold
+        n_independent = np.sum(good_indices)
+        n_removed = self.n_total_basis - n_independent
+        
+        print(f"Original basis: {self.n_total_basis} functions")
+        print(f"Linear dependencies found: {n_removed} functions to remove")
+        print(f"Final basis: {n_independent} functions")
+        print(f"Condition number before: {np.linalg.cond(S):.2e}")
+        
+        if n_removed > 0:
+            # Use symmetric orthogonalization to create new basis
+            # S = U * Lambda * U^T
+            # S^(-1/2) = U * Lambda^(-1/2) * U^T
+            good_eigenvals = eigenvals[good_indices]
+            good_eigenvecs = eigenvecs[:, good_indices]
+            
+            # Create transformation matrix
+            Lambda_inv_sqrt = np.diag(1.0 / np.sqrt(good_eigenvals))
+            X = good_eigenvecs @ Lambda_inv_sqrt
+            
+            # Transform to orthogonal basis - this creates new basis functions
+            # that are linear combinations of the original ones
+            self._create_orthogonal_basis(X, good_indices)
+            
+            # Update counts
+            self.n_total_basis = n_independent
+            
+            # Clear cache
+            self._integral_cache = {}
+            
+            # Verify the new overlap matrix
+            S_new = np.zeros((n_independent, n_independent))
+            for i in range(n_independent):
+                for j in range(i + 1):
+                    basis_i = self.get_basis_function(i)
+                    basis_j = self.get_basis_function(j)
+                    S_new[i, j] = self.integral_engine.overlap_integral(basis_i, basis_j)
+                    if i != j:
+                        S_new[j, i] = S_new[i, j]
+            
+            print(f"Condition number after: {np.linalg.cond(S_new):.2e}")
+            
+        return {
+            'original_size': self.n_total_basis + n_removed,
+            'final_size': n_independent,
+            'removed_functions': n_removed,
+            'condition_number_before': np.linalg.cond(S),
+            'condition_number_after': np.linalg.cond(S_new) if n_removed > 0 else np.linalg.cond(S),
+            'eigenvalues_removed': eigenvals[~good_indices] if n_removed > 0 else [],
+            'transformation_matrix': X if n_removed > 0 else None,
+        }
+    
+    def _create_orthogonal_basis(self, transformation_matrix, good_indices):
+        """
+        Create orthogonal basis functions using the transformation matrix.
+        
+        This is a simplified approach - in practice, we'll keep the original
+        functions that correspond to the largest eigenvalues and remove others.
+        """
+        # For now, we'll use a simpler approach: keep functions corresponding 
+        # to the largest eigenvalues
+        n_electron_kept = 0
+        n_positron_kept = 0
+        
+        # Map good indices back to electron/positron basis
+        electron_keep = []
+        positron_keep = []
+        
+        for idx in np.where(good_indices)[0]:
+            if idx < self.n_electron_basis:
+                electron_keep.append(idx)
+                n_electron_kept += 1
+            else:
+                positron_keep.append(idx - self.n_electron_basis)
+                n_positron_kept += 1
+        
+        # Keep only the good functions
+        if electron_keep:
+            self.electron_basis.basis_functions = [
+                self.electron_basis.basis_functions[i] for i in electron_keep
+            ]
+            self.electron_basis.n_basis = len(electron_keep)
+        else:
+            self.electron_basis.basis_functions = []
+            self.electron_basis.n_basis = 0
+            
+        if positron_keep:
+            self.positron_basis.basis_functions = [
+                self.positron_basis.basis_functions[i] for i in positron_keep
+            ]
+            self.positron_basis.n_basis = len(positron_keep)
+        else:
+            self.positron_basis.basis_functions = []
+            self.positron_basis.n_basis = 0
+        
+        # Update counts
+        self.n_electron_basis = self.electron_basis.n_basis
+        self.n_positron_basis = self.positron_basis.n_basis
+
+    def create_optimized_positronium_basis(self, target_accuracy='medium'):
+        """
+        Create an optimized positronium basis set with minimal linear dependencies.
+        
+        This method creates a carefully chosen set of basis functions specifically
+        optimized for positronium calculations with good numerical stability.
+        
+        Parameters:
+        -----------
+        target_accuracy : str
+            Target accuracy level: 'low', 'medium', 'high'
+            
+        Returns:
+        --------
+        MixedMatterBasis
+            Self reference for method chaining
+        """
+        center = np.array([0.0, 0.0, 0.0])
+        
+        # Clear existing basis
+        self.electron_basis = BasisSet(name="electron-positronium-optimized")
+        self.positron_basis = PositronBasis(name="positron-positronium-optimized")
+        
+        if target_accuracy == 'low':
+            # Minimal basis - just s functions
+            e_s_exponents = [0.5, 2.0]  # Well-separated exponents
+            p_s_exponents = [0.25, 1.0]  # More diffuse for positron
+            
+        elif target_accuracy == 'medium':
+            # Medium basis - s and one p shell with better separation
+            e_s_exponents = [0.25, 1.2, 4.8]  # Better separated
+            e_p_exponents = [0.7]  # Single p shell, well separated from s
+            p_s_exponents = [0.15, 0.8, 3.2]  # More diffuse, better separated
+            p_p_exponents = [0.45]  # Single p shell, well separated from s
+            
+        elif target_accuracy == 'high':
+            # High basis - multiple shells but with much better separation
+            e_s_exponents = [0.2, 1.0, 5.0, 25.0]  # Very well-separated
+            e_p_exponents = [0.6, 3.0]  # Two p shells, well separated
+            p_s_exponents = [0.12, 0.6, 3.0, 15.0]  # More diffuse, very well separated
+            p_p_exponents = [0.35, 1.8]  # Two p shells, well separated
+        else:
+            raise ValueError(f"Unknown accuracy level: {target_accuracy}")
+        
+        # Add electron s functions
+        for exp in e_s_exponents:
+            self.electron_basis.add_function(
+                GaussianBasisFunction(
+                    center=center, exponent=exp, angular_momentum=(0, 0, 0)
+                )
+            )
+        
+        # Add electron p functions if specified
+        if target_accuracy in ['medium', 'high']:
+            for exp in e_p_exponents:
+                for am in [(1, 0, 0), (0, 1, 0), (0, 0, 1)]:
+                    self.electron_basis.add_function(
+                        GaussianBasisFunction(
+                            center=center, exponent=exp, angular_momentum=am
+                        )
+                    )
+        
+        # Add positron s functions
+        for exp in p_s_exponents:
+            self.positron_basis.add_function(
+                GaussianBasisFunction(
+                    center=center, exponent=exp, angular_momentum=(0, 0, 0)
+                )
+            )
+        
+        # Add positron p functions if specified
+        if target_accuracy in ['medium', 'high']:
+            for exp in p_p_exponents:
+                for am in [(1, 0, 0), (0, 1, 0), (0, 0, 1)]:
+                    self.positron_basis.add_function(
+                        GaussianBasisFunction(
+                            center=center, exponent=exp, angular_momentum=am
+                        )
+                    )
+        
+        # Update counts
+        self.n_electron_basis = self.electron_basis.n_basis
+        self.n_positron_basis = self.positron_basis.n_basis
+        self.n_total_basis = self.n_electron_basis + self.n_positron_basis
+        
+        # Clear cache
+        self._integral_cache = {}
+        
+        print(f"Created optimized positronium basis ({target_accuracy}): ")
+        print(f"  {self.n_electron_basis} electron + {self.n_positron_basis} positron = {self.n_total_basis} total")
+        
+        return self
+    
+    def remove_linear_dependencies(self, threshold=1e-8):
+        """
+        Remove linear dependencies from the basis set by analyzing the overlap matrix.
+        
+        Parameters:
+        -----------
+        threshold : float
+            Threshold for detecting linear dependencies
+            
+        Returns:
+        --------
+        Dict
+            Information about removed functions
+        """
+        if not hasattr(self, 'integral_engine'):
+            warnings.warn("Integral engine not set. Cannot remove linear dependencies.")
+            return {}
+        
+        # Build overlap matrix
+        S = self.overlap_matrix()
+        
+        # Analyze eigenvalues
+        eigenvals, eigenvecs = np.linalg.eigh(S)
+        
+        # Find linear dependencies
+        good_eigenvals = eigenvals > threshold
+        n_removed = np.sum(~good_eigenvals)
+        
+        if n_removed > 0:
+            print(f"Removing {n_removed} linearly dependent functions")
+            
+            # Create new basis sets with only linearly independent functions
+            good_indices = np.where(good_eigenvals)[0]
+            
+            # We need to determine which original basis functions to keep
+            # This is approximate - a full implementation would use the eigenvectors
+            n_keep_e = min(self.n_electron_basis, len(good_indices) // 2)
+            n_keep_p = min(self.n_positron_basis, len(good_indices) - n_keep_e)
+            
+            # Keep the first n_keep functions (this is a simplified approach)
+            if n_keep_e < self.n_electron_basis:
+                new_e_basis = self.electron_basis.basis_functions[:n_keep_e]
+                self.electron_basis.basis_functions = new_e_basis
+                self.electron_basis.n_basis = len(new_e_basis)
+                self.n_electron_basis = len(new_e_basis)
+            
+            if n_keep_p < self.n_positron_basis:
+                new_p_basis = self.positron_basis.basis_functions[:n_keep_p]
+                self.positron_basis.basis_functions = new_p_basis
+                self.positron_basis.n_basis = len(new_p_basis)
+                self.n_positron_basis = len(new_p_basis)
+            
+            # Update total count
+            self.n_total_basis = self.n_electron_basis + self.n_positron_basis
+            
+            # Clear cache
+            self._integral_cache = {}
+            
+            return {
+                'removed_functions': n_removed,
+                'kept_electron': self.n_electron_basis,
+                'kept_positron': self.n_positron_basis,
+                'final_condition_number': np.linalg.cond(self.overlap_matrix())
+            }
+        
+        return {'removed_functions': 0}
+    
+    def overlap_matrix(self):
+        """
+        Build the overlap matrix for the entire basis set.
+        
+        Returns:
+        --------
+        np.ndarray
+            Overlap matrix
+        """
+        if not hasattr(self, 'integral_engine') or self.integral_engine is None:
+            raise ValueError("Integral engine not set. Call set_integral_engine first.")
+        
+        n_total = self.n_total_basis
+        S = np.zeros((n_total, n_total))
+        
+        # Calculate all overlap integrals
+        for i in range(n_total):
+            for j in range(i + 1):  # Use symmetry
+                S[i, j] = self.overlap_integral(i, j)
+                if i != j:
+                    S[j, i] = S[i, j]  # Use symmetry
+        
+        return S

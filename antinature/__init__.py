@@ -35,7 +35,13 @@ from .specialized.relativistic import RelativisticCorrection
 from .specialized.visualization import AntinatureVisualizer
 
 # Utilities
-from .utils import create_antinature_calculation
+from .utils import (
+    AntinatureCalculator,
+    calculate_positronium,
+    calculate_antihydrogen,
+    quick_test,
+    create_antinature_calculation,
+)
 
 # Set default flags
 HAS_QISKIT = False
