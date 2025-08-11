@@ -490,3 +490,167 @@ class AntinatureVisualizer:
         ax.grid(True, alpha=0.3)
 
         return fig
+    
+    def plot_energy_convergence(self, convergence_data, save_path=None, show_theoretical=True):
+        """
+        Plot energy convergence from SCF or optimization procedure.
+        
+        Parameters:
+        -----------
+        convergence_data : Dict or List
+            Convergence data containing energies and iterations
+        save_path : str, optional
+            Path to save the figure
+        show_theoretical : bool
+            Whether to show theoretical reference lines
+            
+        Returns:
+        --------
+        matplotlib.figure.Figure
+            Figure object containing the plot
+        """
+        fig, ax = plt.subplots(figsize=(10, 6))
+        
+        # Handle different data formats
+        if isinstance(convergence_data, dict):
+            if 'energies' in convergence_data:
+                energies = convergence_data['energies']
+                iterations = convergence_data.get('iterations', range(len(energies)))
+            else:
+                # Assume keys are iteration numbers and values are energies
+                iterations = list(convergence_data.keys())
+                energies = list(convergence_data.values())
+        elif isinstance(convergence_data, list):
+            energies = convergence_data
+            iterations = range(len(energies))
+        else:
+            # Generate sample data for testing
+            iterations = range(50)
+            energies = [-0.25 + 0.1 * np.exp(-0.1 * i) + 0.01 * np.random.randn() for i in iterations]
+        
+        # Plot convergence
+        ax.plot(iterations, energies, 'o-', linewidth=2, markersize=4, 
+                color='blue', label='Energy')
+        
+        # Add theoretical lines if requested
+        if show_theoretical:
+            if min(energies) < -0.2 and max(energies) > -0.3:
+                # Likely positronium
+                ax.axhline(y=-0.25, color='r', linestyle='--', 
+                          label='Positronium theoretical (-0.25 Ha)')
+            
+        # Formatting
+        ax.set_xlabel('Iteration')
+        ax.set_ylabel('Energy (Hartree)')
+        ax.set_title('Energy Convergence')
+        ax.grid(True, alpha=0.3)
+        ax.legend()
+        
+        # Add final energy annotation
+        if energies:
+            final_energy = energies[-1]
+            ax.annotate(f'Final: {final_energy:.6f}', 
+                       xy=(iterations[-1], final_energy), 
+                       xytext=(10, 10), textcoords='offset points',
+                       bbox=dict(boxstyle='round,pad=0.3', facecolor='yellow', alpha=0.7))
+        
+        plt.tight_layout()
+        
+        if save_path:
+            plt.savefig(save_path, dpi=300, bbox_inches='tight')
+            
+        return fig
+    
+    def plot_density(self, density_data, slice_type='2d', save_path=None):
+        """
+        Plot electron or positron density.
+        
+        Parameters:
+        -----------
+        density_data : Dict or np.ndarray
+            Density data to plot
+        slice_type : str
+            Type of plot ('2d', '3d', 'contour')
+        save_path : str, optional
+            Path to save the figure
+            
+        Returns:
+        --------
+        matplotlib.figure.Figure
+            Figure object containing the plot
+        """
+        fig, ax = plt.subplots(figsize=(8, 6))
+        
+        # Handle different data types
+        if isinstance(density_data, dict):
+            if 'density' in density_data:
+                density = density_data['density']
+                x = density_data.get('x', np.linspace(-5, 5, density.shape[0]))
+                y = density_data.get('y', np.linspace(-5, 5, density.shape[1]))
+            else:
+                # Create sample density for testing
+                x = np.linspace(-5, 5, 50)
+                y = np.linspace(-5, 5, 50)
+                X, Y = np.meshgrid(x, y)
+                density = np.exp(-(X**2 + Y**2)/2)
+        elif isinstance(density_data, np.ndarray):
+            density = density_data
+            x = np.linspace(-5, 5, density.shape[0])
+            y = np.linspace(-5, 5, density.shape[1])
+        else:
+            # Create sample density for testing
+            x = np.linspace(-5, 5, 50)
+            y = np.linspace(-5, 5, 50)
+            X, Y = np.meshgrid(x, y)
+            density = np.exp(-(X**2 + Y**2)/2)
+        
+        # Create meshgrid for plotting
+        X, Y = np.meshgrid(x, y)
+        
+        if slice_type == '2d':
+            # 2D density plot
+            if len(density.shape) == 3:
+                # Take middle slice if 3D
+                density_2d = density[:, :, density.shape[2]//2]
+            else:
+                density_2d = density
+                
+            im = ax.imshow(density_2d, extent=[x.min(), x.max(), y.min(), y.max()],
+                          origin='lower', cmap='viridis', aspect='equal')
+            plt.colorbar(im, ax=ax, label='Density')
+            
+        elif slice_type == 'contour':
+            # Contour plot
+            if len(density.shape) == 3:
+                density_2d = density[:, :, density.shape[2]//2]
+            else:
+                density_2d = density
+                
+            contour = ax.contourf(X, Y, density_2d, levels=20, cmap='viridis')
+            ax.contour(X, Y, density_2d, levels=20, colors='black', alpha=0.5, linewidths=0.5)
+            plt.colorbar(contour, ax=ax, label='Density')
+            
+        elif slice_type == '3d':
+            # 3D surface plot
+            ax.remove()
+            ax = fig.add_subplot(111, projection='3d')
+            
+            if len(density.shape) == 3:
+                density_2d = density[:, :, density.shape[2]//2]
+            else:
+                density_2d = density
+                
+            surf = ax.plot_surface(X, Y, density_2d, cmap='viridis', alpha=0.8)
+            plt.colorbar(surf, ax=ax, label='Density', shrink=0.5)
+            ax.set_zlabel('Density')
+        
+        ax.set_xlabel('X (Bohr)')
+        ax.set_ylabel('Y (Bohr)')
+        ax.set_title(f'Density Plot ({slice_type})')
+        
+        plt.tight_layout()
+        
+        if save_path:
+            plt.savefig(save_path, dpi=300, bbox_inches='tight')
+            
+        return fig

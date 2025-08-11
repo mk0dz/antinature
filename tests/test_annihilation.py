@@ -82,7 +82,7 @@ def test_annihilation_operator():
     print(f"  Matrix[0,0]: {matrix[0,0]:.6f}")
 
     # Calculate annihilation rates
-    rate = ann_op.calculate_annihilation_rate()
+    rate = ann_op.calculate_annihilation_rate(return_details=True)
     print(f"  Annihilation rate details: {rate}")
     print(f"  Two-gamma rate: {rate['two_gamma']['rate']:.6e} au")
     print(f"  Three-gamma rate: {rate['three_gamma']['rate']:.6e} au")

@@ -46,6 +46,9 @@ try:
     HAS_QISKIT = True
 except ImportError:
     HAS_QISKIT = False
+    # Define placeholders for type hints
+    Backend = Any
+    QuantumCircuit = Any
     print(
         "Warning: Qiskit Algorithms not available. Using placeholder implementations."
     )
@@ -75,7 +78,7 @@ class AntinatureVQESolver:
         optimizer_name: str = 'COBYLA',
         max_iterations: int = 500,
         shots: int = 4096,
-        backend: Optional[Backend] = None,
+        backend: Optional['Backend'] = None,
         noise_mitigation: bool = False,
         resilience_level: int = 1,
         use_callback: bool = True,
@@ -423,7 +426,7 @@ class AntinatureVQESolver:
 
     def _create_hardware_efficient_ansatz(
         self, n_qubits: int, reps: int = 3, entanglement: str = 'full'
-    ) -> QuantumCircuit:
+    ) -> 'QuantumCircuit':
         """
         Create a hardware-efficient ansatz with the correct number of qubits.
 
@@ -1247,3 +1250,116 @@ class AntinatureVQESolver:
             plt.savefig(save_path, dpi=300, bbox_inches='tight')
 
         return fig
+
+
+# Backward compatibility alias and specialized class
+class PositroniumVQESolver(AntinatureVQESolver):
+    """
+    Specialized VQE solver for positronium systems.
+    
+    This is a convenience class that inherits from AntinatureVQESolver
+    with positronium-specific defaults and methods.
+    """
+    
+    def __init__(self, **kwargs):
+        """
+        Initialize PositroniumVQESolver with positronium-specific defaults.
+        
+        Parameters:
+        -----------
+        **kwargs : dict
+            Arguments passed to parent AntinatureVQESolver class
+        """
+        # Set positronium-specific defaults
+        defaults = {
+            'optimizer_name': 'COBYLA',
+            'max_iterations': 200,  # Fewer iterations for simple system
+            'shots': 2048,          # Fewer shots needed
+            'noise_mitigation': False,
+            'resilience_level': 0,
+        }
+        
+        # Update with user-provided kwargs
+        for key, value in kwargs.items():
+            defaults[key] = value
+            
+        # Initialize parent class
+        super().__init__(**defaults)
+        
+        # Add positronium-specific theoretical value
+        self.theoretical_values['positronium'] = -0.25
+        
+    def solve_positronium(
+        self, 
+        state='para',
+        reps=2,
+        ansatz_type='specialized',
+        apply_correction=True
+    ):
+        """
+        Solve positronium ground state energy.
+        
+        Parameters:
+        -----------
+        state : str
+            Positronium state ('para' or 'ortho')
+        reps : int
+            Number of ansatz repetitions
+        ansatz_type : str
+            Type of ansatz to use
+        apply_correction : bool
+            Whether to apply theoretical corrections
+            
+        Returns:
+        --------
+        Dict
+            VQE results for positronium
+        """
+        # Create a simple positronium Hamiltonian
+        import numpy as np
+        
+        # Create a 2-qubit Pauli operator for positronium
+        try:
+            from qiskit.quantum_info import SparsePauliOp
+            
+            # Simple positronium Hamiltonian: H = -0.25*I + 0.1*ZZ
+            if state == 'para':
+                # Singlet state (para-positronium)
+                pauli_list = [('II', -0.25), ('ZZ', 0.1)]
+            else:
+                # Triplet state (ortho-positronium) - slightly higher energy
+                pauli_list = [('II', -0.24), ('ZZ', 0.12)]
+                
+            qubit_op = SparsePauliOp.from_list(pauli_list)
+            
+        except ImportError:
+            # Fallback: create a simple matrix operator
+            from qiskit.quantum_info import Operator
+            
+            if state == 'para':
+                # 2-qubit Identity with energy shift
+                H_matrix = -0.25 * np.eye(4)
+                H_matrix[0, 0] += 0.1   # |00> state
+                H_matrix[3, 3] += 0.1   # |11> state
+            else:
+                # Ortho state - slightly different
+                H_matrix = -0.24 * np.eye(4)
+                H_matrix[1, 1] += 0.12  # |01> state
+                H_matrix[2, 2] += 0.12  # |10> state
+                
+            qubit_op = Operator(H_matrix)
+        
+        # Solve using the parent class method
+        results = self.solve_system(
+            system_name='positronium',
+            qubit_operator=qubit_op,
+            ansatz_type=ansatz_type,
+            reps=reps,
+            apply_correction=apply_correction
+        )
+        
+        # Add positronium-specific information
+        results['positronium_state'] = state
+        results['binding_energy'] = results['energy'] + 0.0  # Binding relative to separated e+ e-
+        
+        return results

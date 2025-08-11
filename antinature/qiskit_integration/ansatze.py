@@ -45,6 +45,43 @@ class AntinatureAnsatz:
     for simulating various antinature systems including positronium, anti-hydrogen,
     and more complex systems like positronium molecules.
     """
+    
+    def __init__(self, num_qubits=None, reps=2, entanglement='full', system_type=None):
+        """
+        Initialize AntinatureAnsatz with parameters.
+        
+        Parameters:
+        -----------
+        num_qubits : int, optional
+            Number of qubits for the ansatz
+        reps : int
+            Number of repetition layers
+        entanglement : str
+            Entanglement pattern
+        system_type : str, optional
+            Type of antinature system ('positronium', 'anti_hydrogen', etc.)
+        """
+        self.num_qubits = num_qubits
+        self.reps = reps
+        self.entanglement = entanglement
+        self.system_type = system_type
+    
+    def create_positronium_ansatz(self, include_entanglement=True):
+        """
+        Create positronium ansatz for backward compatibility.
+        
+        Parameters:
+        -----------
+        include_entanglement : bool
+            Whether to include entanglement gates
+            
+        Returns:
+        --------
+        QuantumCircuit
+            Positronium ansatz circuit
+        """
+        entanglement_type = 'full' if include_entanglement else 'linear'
+        return self.positronium_ansatz(reps=self.reps, entanglement=entanglement_type)
 
     @staticmethod
     def positronium_ansatz(reps: int = 3, entanglement: str = 'full') -> QuantumCircuit:
@@ -765,6 +802,6 @@ def create_positronium_circuit(reps: int = 2, include_entanglement: bool = True)
     if not HAS_QISKIT:
         raise ImportError("Qiskit is required for this functionality")
     
-    # Use the AntinatureAnsatz class method
+    # Use the AntinatureAnsatz class
     ansatz = AntinatureAnsatz(num_qubits=2, reps=reps)
     return ansatz.create_positronium_ansatz(include_entanglement=include_entanglement)

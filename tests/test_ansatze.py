@@ -43,11 +43,12 @@ except ImportError as e1:
     print(f"Error importing solver module: {e1}")
 
 try:
-    from antinature.qiskit_integration.vqe_solver import AntinatureVQESolver
+    from antinature.qiskit_integration.vqe_solver import AntinatureVQESolver, PositroniumVQESolver
     HAS_POSITRONIUM_VQE_SOLVER = True
-    print("Successfully imported AntinatureVQESolver")
+    print("Successfully imported AntinatureVQESolver and PositroniumVQESolver")
 except ImportError as e2:
-    print(f"Error importing AntinatureVQESolver: {e2}")
+    HAS_POSITRONIUM_VQE_SOLVER = False
+    print(f"Error importing VQE solvers: {e2}")
 
 try:
     from antinature.qiskit_integration.ansatze import create_positronium_circuit

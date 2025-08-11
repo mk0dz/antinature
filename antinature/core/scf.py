@@ -480,11 +480,20 @@ class AntinatureSCF:
             except np.linalg.LinAlgError:
                 if self.print_level > 0:
                     print("Using alternative eigenvalue approach for positrons...")
-                # Try a more robust approach
-                S_inv_sqrt = sqrtm(inv(S_p))
-                H_core_ortho = S_inv_sqrt.T @ self.H_core_p @ S_inv_sqrt
-                p_vals, p_vecs_ortho = eigh(H_core_ortho)
-                p_vecs = S_inv_sqrt @ p_vecs_ortho
+                # Try a more robust approach with regularization
+                try:
+                    # Add small regularization to avoid singular matrices
+                    S_p_reg = S_p + 1e-10 * np.eye(S_p.shape[0])
+                    S_inv_sqrt = sqrtm(inv(S_p_reg))
+                    H_core_ortho = S_inv_sqrt.T @ self.H_core_p @ S_inv_sqrt
+                    p_vals, p_vecs_ortho = eigh(H_core_ortho)
+                    p_vecs = S_inv_sqrt @ p_vecs_ortho
+                except:
+                    # Final fallback: use simple diagonal guess
+                    if self.print_level > 0:
+                        print("Using simple diagonal initial guess for positrons")
+                    p_vals = np.diag(self.H_core_p)
+                    p_vecs = np.eye(self.H_core_p.shape[0])
 
             self.E_p = p_vals
             self.C_p = p_vecs
@@ -1015,7 +1024,9 @@ class AntinatureSCF:
                     if self.print_level > 0:
                         print("Warning: Orthogonalization error, using SVD")
                     u, s, vh = np.linalg.svd(S_e)
-                    X = u @ np.diag(1.0 / np.sqrt(s)) @ vh
+                    # Regularize singular values to avoid division by zero
+                    s_reg = np.maximum(s, 1e-12)
+                    X = u @ np.diag(1.0 / np.sqrt(s_reg)) @ vh
 
                 # Transform Fock matrix
                 F_ortho = X.T @ F_e @ X
@@ -1067,7 +1078,9 @@ class AntinatureSCF:
                             "Warning: Orthogonalization error for positrons, using SVD"
                         )
                     u, s, vh = np.linalg.svd(S_p)
-                    X = u @ np.diag(1.0 / np.sqrt(s)) @ vh
+                    # Regularize singular values to avoid division by zero
+                    s_reg = np.maximum(s, 1e-12)
+                    X = u @ np.diag(1.0 / np.sqrt(s_reg)) @ vh
 
                 # Transform Fock matrix
                 F_ortho = X.T @ F_p @ X
@@ -1173,6 +1186,17 @@ class AntinatureSCF:
             results['theoretical_energy'] = self.theoretical_values['positronium']
 
         return results
+
+    def run(self):
+        """
+        Alias for solve_scf() for backward compatibility.
+        
+        Returns:
+        --------
+        Dict
+            Results of the SCF calculation
+        """
+        return self.solve_scf()
 
     def get_orbital_energies(self, particle_type='electron'):
         """
