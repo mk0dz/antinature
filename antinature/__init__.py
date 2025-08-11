@@ -9,7 +9,7 @@ The package includes specialized algorithms for positrons and positron-electron
 interactions, relativistic corrections, and electron-positron annihilation processes.
 """
 
-__version__ = "0.1.1"
+__version__ = "0.1.2"
 
 
 # Define dummy classes to prevent NameError in importing code
