@@ -363,8 +363,9 @@ class AntinatureIntegralEngine:
 
             result = prefactor * F0 * angular_factor
 
-        # Nuclear attraction should be negative (attractive potential)
-        result = -abs(result)
+        # Return raw 1/r integral value (always positive)
+        # The Hamiltonian will handle the sign based on particle charges
+        result = abs(result)
 
         # Track performance
         end = time.time()

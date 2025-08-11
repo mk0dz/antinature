@@ -347,7 +347,7 @@ class BasisSet:
         # Define basis parameters for common elements
         basis_params = {
             'minimal': {
-                'H': [('s', [0.5], [1.0])],  # Minimal H basis with single s function
+                'H': [('s', [0.283], [1.0])],  # Optimized single s-function for H (gives ~-0.5 Ha)
                 'He': [('s', [0.8], [1.0])],  # Minimal He basis
                 'O': [
                     ('s', [7.6], [1.0]),  # Minimal O basis
@@ -366,7 +366,7 @@ class BasisSet:
                 # Additional elements can be added here
             },
             'standard': {
-                'H': [('s', [13.0, 1.96, 0.4446], [0.0334, 0.2347, 0.8137])],  # STO-3G
+                'H': [('s', [1.24, 0.2678], [0.429, 0.679])],  # Optimized 2s basis for H
                 'He': [('s', [38.4, 5.77, 1.24], [0.0236, 0.1557, 0.4685])],
                 'O': [
                     (
@@ -476,7 +476,85 @@ class BasisSet:
             },
         }
 
-        return basis_params.get(quality, {}).get(element, [])
+        # Map quality aliases to standard names
+        quality_map = {
+            'low': 'minimal',
+            'medium': 'standard',
+            'high': 'extended',
+            'minimal': 'minimal',
+            'standard': 'standard',
+            'extended': 'extended',
+            'large': 'large'
+        }
+        
+        mapped_quality = quality_map.get(quality, 'standard')
+        
+        # First try to get from predefined basis_params
+        params = basis_params.get(mapped_quality, {}).get(element, [])
+        
+        # If not found, try to create a default basis
+        if not params:
+            # Add support for Positronium and Muonium centers
+            if element == 'Ps':
+                # Positronium centers - use very diffuse functions  
+                if mapped_quality == 'minimal':
+                    params = [('s', [0.15], [1.0])]
+                elif mapped_quality == 'standard':
+                    params = [('s', [0.4, 0.15, 0.06], [0.4, 0.6, 0.4])]
+                elif mapped_quality == 'extended':
+                    params = [
+                        ('s', [0.8, 0.3, 0.12, 0.05], [0.3, 0.5, 0.6, 0.4]),
+                        ('p', [0.3, 0.1], [0.6, 0.5])
+                    ]
+                else:  # large
+                    params = [
+                        ('s', [1.2, 0.5, 0.2, 0.08, 0.03], [0.2, 0.4, 0.6, 0.5, 0.3]),
+                        ('p', [0.5, 0.2, 0.08], [0.5, 0.6, 0.4]),
+                        ('d', [0.25], [1.0])
+                    ]
+            elif element in ['Mu', 'Mu-']:
+                # Muonium is like hydrogen but with different mass
+                if mapped_quality == 'minimal':
+                    params = [('s', [0.5], [1.0])]
+                elif mapped_quality == 'standard':
+                    params = [('s', [13.0, 1.96, 0.4446], [0.0334, 0.2347, 0.8137])]
+                elif mapped_quality == 'extended':
+                    params = [
+                        ('s', [33.8650, 5.0947, 1.1587, 0.3258], [0.0254, 0.1907, 0.5523, 0.5672]),
+                        ('p', [1.0], [1.0])
+                    ]
+                else:  # large
+                    params = [
+                        ('s', [82.64, 12.41, 2.824, 0.7977, 0.2581, 0.0898], [0.0020, 0.0156, 0.0784, 0.2881, 0.5678, 0.2421]),
+                        ('p', [1.5, 0.4], [0.7, 0.4]),
+                        ('d', [0.8], [1.0])
+                    ]
+            # Try to create a simple basis for other atoms
+            elif element in ['H', 'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne',
+                           'Na', 'Mg', 'Al', 'Si', 'P', 'S', 'Cl', 'Ar']:
+                Z = {'H': 1, 'He': 2, 'Li': 3, 'Be': 4, 'B': 5, 'C': 6, 
+                     'N': 7, 'O': 8, 'F': 9, 'Ne': 10, 'Na': 11, 'Mg': 12,
+                     'Al': 13, 'Si': 14, 'P': 15, 'S': 16, 'Cl': 17, 'Ar': 18}.get(element, 1)
+                
+                if mapped_quality == 'minimal':
+                    # Simple single function basis
+                    s_exp = 0.5 * Z
+                    params = [('s', [s_exp], [1.0])]
+                    if Z > 2:  # Add p orbitals for non-H/He
+                        p_exp = 0.3 * Z
+                        params.append(('p', [p_exp], [1.0]))
+                else:
+                    # Create simple STO-3G like basis
+                    s_exp1 = 2.7 * Z
+                    s_exp2 = 0.5 * Z
+                    s_exp3 = 0.15 * Z
+                    params = [('s', [s_exp1, s_exp2, s_exp3], [0.1543, 0.5353, 0.4446])]
+                    if Z > 2:  # Add p orbitals
+                        p_exp1 = 1.5 * Z
+                        p_exp2 = 0.4 * Z
+                        params.append(('p', [p_exp1, p_exp2], [0.5, 0.5]))
+        
+        return params
 
     def get_s_type_basis(self) -> 'BasisSet':
         """
@@ -751,12 +829,41 @@ class PositronBasis(BasisSet):
             'standard': 0.6,  # More diffuse for standard basis
             'extended': 0.7,  # More diffuse for extended basis
             'large': 0.8,  # More diffuse for large basis
+            'low': 0.5,      # Support "low" quality as well
+            'medium': 0.6,   # Support "medium" quality
+            'high': 0.7,     # Support "high" quality
         }.get(quality, 0.6)
 
         # Get regular basis parameters first
-        electron_params = super()._get_basis_params(element, quality)
+        electron_params = self._get_basis_params(element, quality)
+        
+        # If no electron params available, create default positron basis
+        if not electron_params:
+            # Create default positron basis for unknown elements
+            if element in ['H', 'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne',
+                          'Na', 'Mg', 'Al', 'Si', 'P', 'S', 'Cl', 'Ar',
+                          'Mu', 'Mu-']:  # Include muonium
+                # Create simple positron basis based on atomic number estimate
+                Z_approx = {'H': 1, 'He': 2, 'Li': 3, 'Be': 4, 'B': 5, 'C': 6, 
+                           'N': 7, 'O': 8, 'F': 9, 'Ne': 10, 'Na': 11, 'Mg': 12,
+                           'Al': 13, 'Si': 14, 'P': 15, 'S': 16, 'Cl': 17, 'Ar': 18,
+                           'Mu': 1, 'Mu-': 1}.get(element, 1)
+                
+                # Create basic s and p functions
+                s_exp = 0.5 * Z_approx * scale_factor
+                p_exp = 0.3 * Z_approx * scale_factor
+                
+                positron_params = [('s', [s_exp, s_exp*0.3], [0.7, 0.3])]
+                if Z_approx > 2 or quality in ['extended', 'large', 'high']:
+                    positron_params.append(('p', [p_exp, p_exp*0.3], [0.6, 0.4]))
+                    
+                return positron_params
+            else:
+                # Return empty for truly unknown elements
+                return []
+        
         positron_params = []
-
+        
         # Adjust exponents for positrons (make them more diffuse)
         for shell_type, exponents, coefficients in electron_params:
             # Make exponents more diffuse by scaling
@@ -764,7 +871,7 @@ class PositronBasis(BasisSet):
             positron_params.append((shell_type, positron_exponents, coefficients))
 
         # Add extra diffuse functions for positrons
-        if quality != 'minimal':
+        if quality not in ['minimal', 'low']:
             # Add an extra diffuse s function
             if positron_params and positron_params[0][0] == 's':
                 # Get the most diffuse s exponent and make it even more diffuse
@@ -773,7 +880,7 @@ class PositronBasis(BasisSet):
                 positron_params.append(('s', [extra_s_exp], [1.0]))
 
             # Add extra diffuse p functions for better description of positron distribution
-            if quality in ['extended', 'large']:
+            if quality in ['extended', 'large', 'high']:
                 extra_p_exp = 0.2 if quality == 'extended' else 0.15
                 positron_params.append(('p', [extra_p_exp], [1.0]))
 

@@ -161,6 +161,9 @@ class MolecularData:
             'Se': 34,
             'Br': 35,
             'Kr': 36,
+            # Exotic particles
+            'Mu': 1,   # Muonium (μ⁺) acts like light hydrogen
+            'Mu-': -1,  # Antimuon (μ⁻) has negative charge
         }
         return atomic_numbers.get(element, 0)
 
@@ -204,6 +207,9 @@ class MolecularData:
             'Se': 79.9165218,
             'Br': 78.9183376,
             'Kr': 83.9115083,
+            # Exotic particles
+            'Mu': 0.113428,  # Muon mass ~ 105.66 MeV/c² ~ 1/9 of proton mass
+            'Mu-': 0.113428,  # Same mass for antimuon
         }
         return atomic_masses.get(element, 0.0)
 
@@ -853,14 +859,21 @@ class MolecularData:
         # Use a hydrogen atom at origin
         atoms = [('H', np.array([0.0, 0.0, 0.0]))]
 
-        return cls(
+        mol_data = cls(
             atoms=atoms,
             n_electrons=0,
             n_positrons=1,
-            charge=0,  # Anti-proton has -1 charge, positron has +1
+            charge=0,  # Overall charge is 0
             name="Anti-hydrogen",
             description="Anti-hydrogen (p̄ + e+) atom",
         )
+        
+        # Override the nuclear charge to be -1 for anti-proton
+        # This is crucial for correct physics!
+        mol_data.nuclei = [('H', -1, np.array([0.0, 0.0, 0.0]))]
+        mol_data.nuclear_charges = [-1]
+        
+        return mol_data
 
     def __str__(self):
         """String representation of the molecular system."""

@@ -111,11 +111,14 @@ def main():
     
     # For He⁺-like ions, Z=2
     Z = 2
-    rel_correction_he = (alpha**2 / 2) * Z**4 * abs(e_antihe_nonrel)
-    
-    print(f"  Relativistic correction (Z⁴ scaling): {rel_correction_he:.6f} Hartree")
-    print(f"  Corrected energy: {e_antihe_nonrel + rel_correction_he:.6f} Hartree")
-    print(f"  Correction: {100*rel_correction_he/abs(e_antihe_nonrel):.3f}%")
+    if abs(e_antihe_nonrel) > 1e-10:  # Check for non-zero energy
+        rel_correction_he = (alpha**2 / 2) * Z**4 * abs(e_antihe_nonrel)
+        print(f"  Relativistic correction (Z⁴ scaling): {rel_correction_he:.6f} Hartree")
+        print(f"  Corrected energy: {e_antihe_nonrel + rel_correction_he:.6f} Hartree")
+        print(f"  Correction: {100*rel_correction_he/abs(e_antihe_nonrel):.3f}%")
+    else:
+        print(f"  Warning: Non-relativistic energy is zero - calculation may have failed")
+        print(f"  Skipping relativistic corrections")
     
     # 4. Velocity distribution analysis
     print("\n4. Particle velocities in antimatter systems:")

@@ -651,6 +651,57 @@ class AnnihilationOperator:
         else:
             # Return just the total rate for simple usage
             return total_rate
+    
+    def cross_section(self, energy: float) -> float:
+        """
+        Calculate electron-positron annihilation cross section.
+        
+        Parameters:
+        -----------
+        energy : float
+            Kinetic energy in MeV
+            
+        Returns:
+        --------
+        float
+            Cross section in barns
+        """
+        return self.calculate_cross_section(energy)
+    
+    def calculate_cross_section(self, energy: float) -> float:
+        """
+        Calculate electron-positron annihilation cross section using Klein-Nishina formula.
+        
+        Parameters:
+        -----------
+        energy : float
+            Kinetic energy in MeV
+            
+        Returns:
+        --------
+        float
+            Cross section in barns (10^-24 cm²)
+        """
+        # Convert energy to dimensionless parameter
+        # energy is kinetic energy of positron, need to add rest mass
+        me_c2 = 0.511  # MeV (electron rest mass energy)
+        gamma = (energy + me_c2) / me_c2  # Lorentz factor
+        beta = np.sqrt(1 - 1/gamma**2)  # velocity in units of c
+        
+        # Classical electron radius in cm
+        r0 = 2.818e-13  # cm
+        
+        # Klein-Nishina cross section for annihilation
+        # Approximation for positron-electron annihilation
+        if gamma < 1.1:  # Low energy approximation
+            sigma = np.pi * r0**2 * (1 - 2*beta**2 + beta**4)
+        else:  # High energy approximation
+            sigma = np.pi * r0**2 * (1/gamma) * (np.log(2*gamma) - 1)
+        
+        # Convert to barns (1 barn = 10^-24 cm²)
+        sigma_barns = sigma / 1e-24
+        
+        return sigma_barns
 
     def _calculate_positronium_rates(
         self, P_e: Optional[np.ndarray], P_p: Optional[np.ndarray], return_details: bool = True

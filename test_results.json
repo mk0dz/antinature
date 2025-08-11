@@ -1,0 +1,22 @@
+{
+  "results": {
+    "Positronium Systems": {
+      "basic_positronium": {
+        "energy": -0.25,
+        "expected": -0.25,
+        "error": 0.0,
+        "passed": true
+      },
+      "positronium_convergence": {
+        "energies": [
+          -0.25,
+          -0.25,
+          -0.25
+        ],
+        "converged": true,
+        "passed": true
+      },
+      "ps2_molecule": {
+        "energy": 0.10766970252868761,
+        "binding_energy": 0.6076697025286876,
+        "passed": 

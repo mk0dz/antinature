@@ -64,10 +64,10 @@ if HAS_QISKIT:
 # Conditionally import module components only if dependencies are available
 if HAS_QISKIT and HAS_QISKIT_ALGORITHMS:
     try:
-        from .adapter import AntinatureQuantumAdapter
-        __all__.append('AntinatureQuantumAdapter')
+        from .adapter import QiskitNatureAdapter, AntinatureQuantumAdapter
+        __all__.extend(['QiskitNatureAdapter', 'AntinatureQuantumAdapter'])
     except ImportError as e:
-        warnings.warn(f"Could not import AntinatureQuantumAdapter: {e}")
+        warnings.warn(f"Could not import adapter classes: {e}")
 
     try:
         from .ansatze import AntinatureAnsatz
@@ -76,10 +76,10 @@ if HAS_QISKIT and HAS_QISKIT_ALGORITHMS:
         warnings.warn(f"Could not import AntinatureAnsatz: {e}")
 
     try:
-        from .circuits import QuantumCircuitBuilder
-        __all__.append('QuantumCircuitBuilder')
+        from .circuits import AntinatureCircuits, QuantumCircuitBuilder
+        __all__.extend(['AntinatureCircuits', 'QuantumCircuitBuilder'])
     except ImportError as e:
-        warnings.warn(f"Could not import QuantumCircuitBuilder: {e}")
+        warnings.warn(f"Could not import circuit classes: {e}")
 
     # solver.py removed - functionality merged into antimatter_solver.py
 
@@ -104,3 +104,14 @@ if HAS_QISKIT and HAS_QISKIT_ALGORITHMS:
 
 else:
     warnings.warn("Qiskit and/or Qiskit Algorithms not available. Quantum functionality disabled.")
+    # Try to import the aliases anyway for compatibility
+    try:
+        from .adapter import QiskitNatureAdapter, AntinatureQuantumAdapter
+        __all__.extend(['QiskitNatureAdapter', 'AntinatureQuantumAdapter'])
+    except ImportError:
+        pass
+    try:
+        from .circuits import AntinatureCircuits, QuantumCircuitBuilder
+        __all__.extend(['AntinatureCircuits', 'QuantumCircuitBuilder'])
+    except ImportError:
+        pass

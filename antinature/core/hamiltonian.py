@@ -238,7 +238,9 @@ class AntinatureHamiltonian:
                 if i != j:
                     V_nuc_e[j, i] = V_nuc_e[i, j]
 
-        # Calculate nuclear attraction for positrons (repulsive)
+        # Calculate nuclear interaction for positrons
+        # For regular nuclei (positive charge): repulsive
+        # For anti-nuclei (negative charge): attractive
         if n_p_basis > 0:
             for i in range(n_p_basis):
                 for j in range(i + 1):  # Use symmetry
@@ -248,7 +250,17 @@ class AntinatureHamiltonian:
                     # Sum over all nuclei
                     v_sum = 0.0
                     for atom, charge, pos in self.nuclei:
-                        # Nuclear repulsion integral (positive for repulsion)
+                        # For positrons (charge +1) interacting with nuclei:
+                        # The nuclear_attraction_integral now returns a POSITIVE value (1/r integral)  
+                        # Physics: V = Z*e_positron / r = Z*(+1) / r
+                        # Same sign convention as electrons now that integral is positive:
+                        # - Normal nucleus (charge > 0): repulsive, so we want V > 0
+                        #   v_sum -= charge * (positive integral) = -(+charge) * positive = negative (WRONG!)
+                        #   Should be: v_sum += charge * integral = positive ✓
+                        # - Anti-nucleus (charge < 0): attractive, so we want V < 0
+                        #   v_sum -= charge * (positive integral) = -(-charge) * positive = positive (WRONG!)  
+                        #   Should be: v_sum += charge * integral = negative ✓
+                        # So positrons need OPPOSITE sign from electrons!
                         v_sum += (
                             charge
                             * self.integral_engine.nuclear_attraction_integral(

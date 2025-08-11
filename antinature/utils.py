@@ -41,7 +41,7 @@ class AntinatureCalculator:
         self.print_level = print_level
         self.results_history = []
         
-    def calculate_positronium(self, accuracy: str = 'medium') -> Dict:
+    def calculate_positronium(self, accuracy: str = 'medium', spin_state: str = 'singlet') -> Dict:
         """
         Calculate ground state properties of positronium with automatic optimization.
         
@@ -49,6 +49,8 @@ class AntinatureCalculator:
         -----------
         accuracy : str
             Desired accuracy level ('low', 'medium', 'high')
+        spin_state : str
+            Spin state ('singlet' for para-positronium, 'triplet' for ortho-positronium)
             
         Returns:
         --------
@@ -87,9 +89,9 @@ class AntinatureCalculator:
     
     def calculate_custom_system(
         self, 
-        atoms: List[Tuple[str, np.ndarray]], 
-        n_electrons: int, 
-        n_positrons: int,
+        atoms: Union[List[Tuple[str, np.ndarray]], MolecularData], 
+        n_electrons: Optional[int] = None, 
+        n_positrons: Optional[int] = None,
         accuracy: str = 'medium'
     ) -> Dict:
         """
@@ -118,13 +120,19 @@ class AntinatureCalculator:
             
         start_time = time.time()
         
-        # Create molecular data
-        mol_data = MolecularData(
-            atoms=atoms,
-            n_electrons=n_electrons,
-            n_positrons=n_positrons,
-            charge=0
-        )
+        # Handle both MolecularData and list inputs
+        if isinstance(atoms, MolecularData):
+            mol_data = atoms
+        else:
+            # Create molecular data from list
+            if n_electrons is None or n_positrons is None:
+                raise ValueError("n_electrons and n_positrons required when atoms is a list")
+            mol_data = MolecularData(
+                atoms=atoms,
+                n_electrons=n_electrons,
+                n_positrons=n_positrons,
+                charge=0
+            )
         
         # Get optimal basis set
         basis_set = self._get_optimal_basis(mol_data, accuracy)
@@ -158,6 +166,39 @@ class AntinatureCalculator:
                 e_quality=accuracy,
                 p_quality=accuracy
             )
+            
+            # Check if basis was created successfully
+            if basis.n_total_basis == 0:
+                # Fall back to a simple basis
+                if self.print_level > 0:
+                    print(f"Warning: No basis created for {molecular_data.atoms}, using fallback basis")
+                
+                # Create a minimal basis manually
+                from antinature.core.basis import GaussianBasisFunction
+                center = np.array([0.0, 0.0, 0.0])
+                
+                # Add simple s and p functions for electrons
+                if molecular_data.n_electrons > 0:
+                    basis.electron_basis.add_function(
+                        GaussianBasisFunction(center, 1.0, (0, 0, 0))  # s
+                    )
+                    basis.electron_basis.add_function(
+                        GaussianBasisFunction(center, 0.3, (0, 0, 0))  # s
+                    )
+                
+                # Add simple s and p functions for positrons
+                if molecular_data.n_positrons > 0:
+                    basis.positron_basis.add_function(
+                        GaussianBasisFunction(center, 0.5, (0, 0, 0))  # s
+                    )
+                    basis.positron_basis.add_function(
+                        GaussianBasisFunction(center, 0.15, (0, 0, 0))  # s
+                    )
+                
+                # Update basis counts
+                basis.n_electron_basis = basis.electron_basis.n_basis
+                basis.n_positron_basis = basis.positron_basis.n_basis
+                basis.n_total_basis = basis.n_electron_basis + basis.n_positron_basis
         
         # Set up integral engine
         integral_engine = AntinatureIntegralEngine()
@@ -190,7 +231,12 @@ class AntinatureCalculator:
             
             # Check overlap matrix condition
             S = matrices['overlap']
-            cond_num = np.linalg.cond(S)
+            
+            # Check for empty or invalid overlap matrix
+            if S.size == 0 or S.shape[0] == 0:
+                raise ValueError("Empty overlap matrix - no basis functions created")
+            
+            cond_num = np.linalg.cond(S) if S.size > 0 else np.inf
             
             if cond_num > 1e12:
                 if self.print_level > 0:
@@ -328,15 +374,31 @@ class AntinatureCalculator:
         }
         
         # Add orbital information if available
-        if 'E_electron' in scf_results and scf_results['E_electron'] is not None:
+        if 'E_electron' in scf_results and scf_results['E_electron'] is not None and len(scf_results['E_electron']) > 0:
             results['electron_orbital_energies'] = scf_results['E_electron']
-            results['homo_electron'] = scf_results['E_electron'][molecular_data.n_electrons//2 - 1] if molecular_data.n_electrons > 0 else None
-            results['lumo_electron'] = scf_results['E_electron'][molecular_data.n_electrons//2] if molecular_data.n_electrons < len(scf_results['E_electron']) else None
+            n_occ_e = molecular_data.n_electrons // 2
+            if n_occ_e > 0 and n_occ_e <= len(scf_results['E_electron']):
+                results['homo_electron'] = scf_results['E_electron'][n_occ_e - 1]
+            else:
+                results['homo_electron'] = None
+            if n_occ_e < len(scf_results['E_electron']):
+                results['lumo_electron'] = scf_results['E_electron'][n_occ_e]
+            else:
+                results['lumo_electron'] = None
         
-        if 'E_positron' in scf_results and scf_results['E_positron'] is not None:
+        if 'E_positron' in scf_results and scf_results['E_positron'] is not None and len(scf_results['E_positron']) > 0:
             results['positron_orbital_energies'] = scf_results['E_positron']
-            results['homo_positron'] = scf_results['E_positron'][molecular_data.n_positrons//2 - 1] if molecular_data.n_positrons > 0 else None
-            results['lumo_positron'] = scf_results['E_positron'][molecular_data.n_positrons//2] if molecular_data.n_positrons < len(scf_results['E_positron']) else None
+            n_occ_p = molecular_data.n_positrons // 2
+            if molecular_data.n_positrons % 2 != 0:
+                n_occ_p = (molecular_data.n_positrons + 1) // 2
+            if n_occ_p > 0 and n_occ_p <= len(scf_results['E_positron']):
+                results['homo_positron'] = scf_results['E_positron'][n_occ_p - 1]
+            else:
+                results['homo_positron'] = None
+            if n_occ_p < len(scf_results['E_positron']):
+                results['lumo_positron'] = scf_results['E_positron'][n_occ_p]
+            else:
+                results['lumo_positron'] = None
         
         # Theoretical comparison for known systems
         theoretical_energy = None

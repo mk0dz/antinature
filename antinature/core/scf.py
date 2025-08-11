@@ -1010,7 +1010,9 @@ class AntinatureSCF:
             if F_e is not None:
                 n_e_basis = self.basis_set.n_electron_basis
                 S_e = self.S[:n_e_basis, :n_e_basis]
-                n_occ_e = self.n_electrons // 2
+                # For electrons: handle odd number properly
+                # Each orbital can hold 2 electrons (spin up/down)
+                n_occ_e = (self.n_electrons + 1) // 2  # Round up for odd numbers
 
                 # Apply level shifting if enabled
                 if self.level_shifting > 0 and iteration > 0:
@@ -1043,7 +1045,9 @@ class AntinatureSCF:
                 # Calculate new density matrix
                 P_e_new = np.zeros_like(self.P_e)
                 for i in range(min(n_occ_e, C_e_new.shape[1])):
-                    P_e_new += 2.0 * np.outer(C_e_new[:, i], C_e_new[:, i])
+                    # For single particle in orbital, occupation is 1, not 2
+                    occ = 1.0 if self.n_electrons == 1 and i == 0 else 2.0
+                    P_e_new += occ * np.outer(C_e_new[:, i], C_e_new[:, i])
 
                 # Apply damping for improved convergence
                 if iteration > 0:
@@ -1062,7 +1066,9 @@ class AntinatureSCF:
                 n_p_basis = self.basis_set.n_positron_basis
                 n_e_basis = self.basis_set.n_electron_basis
                 S_p = self.S[n_e_basis:, n_e_basis:]
-                n_occ_p = self.n_positrons // 2
+                # For positrons: handle odd number properly
+                # Each orbital can hold 2 positrons (spin up/down)
+                n_occ_p = (self.n_positrons + 1) // 2  # Round up for odd numbers
 
                 # Apply level shifting if enabled
                 if self.level_shifting > 0 and iteration > 0:
@@ -1097,7 +1103,9 @@ class AntinatureSCF:
                 # Calculate new density matrix
                 P_p_new = np.zeros_like(self.P_p)
                 for i in range(min(n_occ_p, C_p_new.shape[1])):
-                    P_p_new += 2.0 * np.outer(C_p_new[:, i], C_p_new[:, i])
+                    # For single particle in orbital, occupation is 1, not 2
+                    occ = 1.0 if self.n_positrons == 1 and i == 0 else 2.0
+                    P_p_new += occ * np.outer(C_p_new[:, i], C_p_new[:, i])
 
                 # Apply damping for improved convergence
                 if iteration > 0:

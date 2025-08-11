@@ -659,3 +659,7 @@ class PositroniumAdapter(QiskitNatureAdapter):
             results[attraction] = operator
 
         return results
+
+
+# Alias for backward compatibility
+AntinatureQuantumAdapter = QiskitNatureAdapter

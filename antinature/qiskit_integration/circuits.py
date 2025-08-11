@@ -39,6 +39,17 @@ try:
 
 except ImportError:
     HAS_QISKIT = False
+    # Create dummy classes for type annotations
+    class QuantumCircuit:
+        pass
+    class QuantumRegister:
+        pass
+    class ClassicalRegister:
+        pass
+    class Parameter:
+        pass
+    class ParameterVector:
+        pass
 
 
 class AntinatureCircuits:
@@ -748,9 +759,12 @@ class PositroniumCircuit:
         self.optimization_level = optimization_level
 
         # Initialize transpiler pass manager if needed
-        if optimization_level > 0:
+        if optimization_level > 0 and HAS_QISKIT:
             self.pass_manager = PassManager()
-            self.pass_manager.append(Unroll3qOrMore(['u', 'cx']))
+            try:
+                self.pass_manager.append(Unroll3qOrMore(['u', 'cx']))
+            except (NameError, ImportError):
+                pass
 
     def create_registers(self) -> Dict:
         """
@@ -1049,3 +1063,7 @@ class PositroniumCircuit:
             circuit = self.pass_manager.run(circuit)
 
         return circuit
+
+
+# Alias for backward compatibility
+QuantumCircuitBuilder = AntinatureCircuits
